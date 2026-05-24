@@ -1,52 +1,74 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Engine where
 
-import Handlers.Engine (Song(..))
+import Control.Exception (SomeException, displayException, throwIO, try)
+import Handlers.Engine (Track(..), Library)
 import Handlers.Logger (Log (Info), logMessage)
--- import System.Directory (doesFileExist)
 import System.Process
 import Control.Concurrent
--- import Text.Read (readMaybe)
-import System.Directory.OsPath (listDirectory)
-import System.OsPath (OsPath(..), (</>), takeExtension, unsafeEncodeUtf)
--- import Data.List (sort)
+import System.Directory (listDirectory)
+import System.FilePath
+import System.OsPath (encodeUtf)
+-- import System ((</>), takeExtension, unsafeEncodeUtf)
+-- import System.Directory.OsPath (listDirectory)
+-- import System.OsPath (OsPath(..), (</>), takeExtension, unsafeEncodeUtf)
+import Monatone.Common  (parseMetadata)
+import Monatone.Metadata  (Metadata(..), AudioProperties (duration))
+import qualified Data.ByteString.Lazy as BL
+import Data.Aeson (encode, eitherDecode)
+import Data.Time (getCurrentTime)
+import Data.Maybe
+import qualified Data.Map.Strict as Map
 
-songmp3 = "/home/m/projects/jukebox/app/1.mp3"
-songmp2 = "/home/m/projects/jukebox/2.mp3"
---
+parseTrack :: FilePath -> IO (Track)
+parseTrack file = do
+  time <- getCurrentTime
+  osPath <- encodeUtf file
+  metadata <- parseMetadata osPath
+  case metadata of
+    Left _ -> error "parse error"
+    Right md -> pure $ Track { 
+      path = file,
+      duration = fromMaybe 0 md.audioProperties.duration,
+      interval = 0,
+      lastPlay = Nothing,
+      planPlay = Just time
+                          } 
 
-getListTracks :: OsPath ->  IO ([Song])
-getListTracks dir = do
+bank = "/home/m/share/sharedFolder/test"
+migration :: FilePath -> IO (Map.Map FilePath Track)
+migration dir = do
+  eFileDB <- loadFromFileDB dir 
+  dirDB <- loadFromDir dir
+  case eFileDB of
+    Left _ -> BL.writeFile file (encode dirDB) >> pure dirDB
+    Right fileDB -> do
+      pure $ Map.union fileDB dirDB
+  where 
+    file = dir <> "/jukebox.json"
+  
+loadFromDir :: FilePath -> IO (Map.Map FilePath Track)
+loadFromDir dir = do
   files <- listDirectory dir
-  let mp3s = [ dir </> f | f <- files, takeExtension f == (unsafeEncodeUtf ".mp3") ]
-  let songs = [ Song i fp 0 0 0 | (i, fp) <- zip [1..] mp3s ]
-  pure songs
-  -- pure [Song 0 "" 0 0 0]
-  -- pure []
+  let mp3s = [ (dir </> f) | f <- files, takeExtension f == (".mp3") ]
+  mp3m <- mapM parseTrack mp3s
+  pure (Map.fromList $ zip mp3s mp3m)
+  
+-- loadFromDirectory :: 
+loadFromFile :: FilePath -> IO (Map.Map FilePath Track)
+loadFromFile dir = do
+  db <- loadDB dir
+  print db
+  pure db
 
+loadDB :: FilePath -> IO (Map.Map FilePath Track)
+loadDB dir = do
+  db <- loadFromFileDB dir
+  case db of
+    Left error' -> throwIO $ userError error'
+    Right config -> pure config
 
--- getDuration :: FilePath -> IO (Maybe Double)
--- getDuration path = do
---   out <- readProcess "ffprobe"
---     ["-v", "error"
---     ,"-show_entries", "format=duration"
---     ,"-of", "default=noprint_wrappers=1:nokey=1"
---     ,path
---     ] ""
---   pure (readMaybe out)
-
--- engine :: IO ()
--- engine = do
---  putStrLn "Hello, Haskell!"
---  exists <- doesFileExist songmp3 
---  print exists
---  callProcess "xdg-open" [songmp3]
---  print "pause 3 sec"
---  threadDelay 3000000
---  print "after pause"
---  callProcess "xdg-open" [songmp2]
---
---  pure ()
-
-
-
+loadFromFileDB :: FilePath -> IO (Either String (Map.Map FilePath Track))
+loadFromFileDB path =
+  either (Left . displayException) eitherDecode
+    <$> try @SomeException (BL.readFile (path <> "/jukebox.json"))

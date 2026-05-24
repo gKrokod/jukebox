@@ -40,6 +40,8 @@ library
       Handlers.Logger
       Engine
       Logger
+      Parser
+      Config
     build-depends: 
       aeson
       , base
@@ -48,6 +50,10 @@ library
       , directory
       , process
       , filepath
+      , time
+      , monatone
+      , containers
+      , bytestring
 
 
 executable musicjukebox-exe
@@ -63,6 +69,7 @@ executable musicjukebox-exe
       , filepath
       , monatone
       , text
+      , time
     -- Directories containing source files.
     hs-source-dirs:   app
 
