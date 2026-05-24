@@ -7,6 +7,10 @@ cabal-dev
 *.chi
 *.chs.h
 *.dyn_o
+*.mp3
+*.flac
+*.mp4
+*.ogg
 *.dyn_hi
 .hpc
 .hsenv

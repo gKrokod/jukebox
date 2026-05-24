@@ -1,0 +1,77 @@
+cabal-version:      3.14
+name:               musicjukebox
+-- PVP summary:     +-+------- breaking API changes
+--                  | | +----- non-breaking API additions
+--                  | | | +--- code changes with no API change
+version:            0.1.0.0
+
+author:             gKrokod
+category:           Sound
+build-type:         Simple
+
+-- Extra doc files to be distributed with the package, such as a CHANGELOG or a README.
+extra-doc-files:    CHANGELOG.md
+
+-- Extra source files to be distributed with the package, such as examples, or a tutorial module.
+-- extra-source-files:
+
+common common-extensions
+  default-language: GHC2024
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
+      OverloadedRecordDot
+      DeriveAnyClass
+      LambdaCase
+      TypeApplications
+      BangPatterns
+      DataKinds
+      GADTs
+common warnings
+  ghc-options: -Wall
+
+library 
+    import:
+        warnings
+      , common-extensions
+    hs-source-dirs: src
+    exposed-modules:
+      Handlers.Engine
+      Handlers.Logger
+      Engine
+      Logger
+    build-depends: 
+      aeson
+      , base
+      , text
+      , time
+      , directory
+      , process
+      , filepath
+
+
+executable musicjukebox-exe
+    import:
+      warnings
+      , common-extensions
+    main-is:          Main.hs
+    build-depends:    
+      base
+      , musicjukebox
+      , directory
+      , process
+      , filepath
+      , monatone
+      , text
+    -- Directories containing source files.
+    hs-source-dirs:   app
+
+    
+benchmark musicjukebox
+    -- Import common warning flags.
+    import:
+      warnings
+      , common-extensions
+    hs-source-dirs: bench
+    main-is:    JukeBench.hs
+    build-depends:    base

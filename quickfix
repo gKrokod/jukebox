@@ -1,0 +1,80 @@
+/home/m/projects/jukebox/app/Main.hs:7:35: warning: [GHC-38856] [-Wunused-imports]
+    The import of ‘logMessage’
+    from module ‘Handlers.Logger’ is redundant
+/home/m/projects/jukebox/app/Main.hs:13:1: warning: [GHC-66111] [-Wunused-imports]
+    The qualified import of ‘Handlers.Engine’ is redundant
+/home/m/projects/jukebox/app/Main.hs:16:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Monatone.MP3’ is redundant
+/home/m/projects/jukebox/app/Main.hs:23:1: warning: [GHC-38417] [-Wmissing-signatures]
+    Top-level binding with no type signature: songmp3 :: [Char]
+/home/m/projects/jukebox/app/Main.hs:23:11: warning: [GHC-18042] [-Wtype-defaults]
+    • Defaulting the type variable ‘a0’ to type ‘[Char]’ in the following constraint
+        ghc-internal-9.1401.0:GHC.Internal.Data.String.IsString a0
+          arising from the literal ‘"/home/m/projects/jukebox/app/1.mp3"’
+    • In the expression: "/home/m/projects/jukebox/app/1.mp3"
+      In an equation for ‘songmp3’:
+          songmp3 = "/home/m/projects/jukebox/app/1.mp3"
+/home/m/projects/jukebox/app/Main.hs:57:3: warning: [GHC-81995] [-Wunused-do-bind]
+    A do-notation statement discarded a result of type ‘[()]’
+    Suggested fix:
+      Suppress this warning by saying
+        ‘_ <- mapM (\ x -> getMD $ x.path) ts’
+/home/m/projects/jukebox/src/Handlers/Engine.hs:3:23: warning: [GHC-99623] [-Wdodgy-imports]
+    The import item ‘System.OsPath.Types.OsPath(..)’ suggests that
+    ‘System.OsPath.Types.OsPath’ has (in-scope) constructors or record fields,
+                                     but it has none
+  |
+3 | import System.OsPath (OsPath(..))
+  |                       ^^^^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:5:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Handlers.Logger’ is redundant
+  |
+5 | import Handlers.Logger (Log (Info), logMessage)
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:7:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.Process’ is redundant
+  |
+7 | import System.Process
+  | ^^^^^^^^^^^^^^^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:8:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Concurrent’ is redundant
+  |
+8 | import Control.Concurrent
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:11:23: warning: [GHC-99623] [-Wdodgy-imports]
+    The import item ‘System.OsPath.Types.OsPath(..)’ suggests that
+    ‘System.OsPath.Types.OsPath’ has (in-scope) constructors or record fields,
+                                     but it has none
+   |
+11 | import System.OsPath (OsPath(..), (</>), takeExtension, unsafeEncodeUtf)
+   |                       ^^^^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:14:1: warning: [GHC-38417] [-Wmissing-signatures]
+    Top-level binding with no type signature: songmp3 :: [Char]
+   |
+14 | songmp3 = "/home/m/projects/jukebox/app/1.mp3"
+   | ^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:14:11: warning: [GHC-18042] [-Wtype-defaults]
+    • Defaulting the type variable ‘a0’ to type ‘[Char]’ in the following constraint
+        ghc-internal-9.1401.0:GHC.Internal.Data.String.IsString a0
+          arising from the literal ‘"/home/m/projects/jukebox/app/1.mp3"’
+    • In the expression: "/home/m/projects/jukebox/app/1.mp3"
+      In an equation for ‘songmp3’:
+          songmp3 = "/home/m/projects/jukebox/app/1.mp3"
+   |
+14 | songmp3 = "/home/m/projects/jukebox/app/1.mp3"
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:15:1: warning: [GHC-38417] [-Wmissing-signatures]
+    Top-level binding with no type signature: songmp2 :: [Char]
+   |
+15 | songmp2 = "/home/m/projects/jukebox/2.mp3"
+   | ^^^^^^^
+/home/m/projects/jukebox/src/Engine.hs:15:11: warning: [GHC-18042] [-Wtype-defaults]
+    • Defaulting the type variable ‘a0’ to type ‘[Char]’ in the following constraint
+        ghc-internal-9.1401.0:GHC.Internal.Data.String.IsString a0
+          arising from the literal ‘"/home/m/projects/jukebox/2.mp3"’
+    • In the expression: "/home/m/projects/jukebox/2.mp3"
+      In an equation for ‘songmp2’:
+          songmp2 = "/home/m/projects/jukebox/2.mp3"
+   |
+15 | songmp2 = "/home/m/projects/jukebox/2.mp3"
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
