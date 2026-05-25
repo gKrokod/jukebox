@@ -54,6 +54,7 @@ library
       , monatone
       , containers
       , bytestring
+      , stm
 
 
 executable musicjukebox-exe

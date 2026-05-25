@@ -10,7 +10,6 @@ import System.Process
 import System.OsPath
 import qualified Handlers.Logger
 import qualified Logger
-import qualified Handlers.Engine
 import qualified Engine
 import Control.Concurrent
 import Monatone.MP3 (parseMP3)
@@ -21,31 +20,12 @@ import qualified Data.Text as T
 import Data.Maybe
 import Data.Text (Text)
 
-songmp3 = "/home/m/projects/jukebox/app/1.mp3"
-
--- durMD :: Handlers.Engine.Track -> IO (Handlers.Engine.Track) 
--- durMD s = do
---   result <- parseMetadata s.path 
---   case result of
---     Left err -> pure s
---     Right metadata -> do
---       -- pure s
---       pure $ (s {Handlers.Engine.duration = (fromMaybe 0 (metadata.audioProperties.duration))})
-
-getMD :: OsPath -> IO ()
-getMD os = do
-  result <- parseMetadata os
-  case result of
-    Left err -> TIO.putStrLn $ "Error: " <> (T.pack $ show err)
-    Right metadata -> do
-      -- print metadata
-      TIO.putStrLn $ ("Title: ") <> maybe ("Unknown" :: Text) id metadata.title 
-      TIO.putStrLn ( "Artist: " <> maybe "Unknown" id ( metadata.artist) )
-      -- TIO.putStrLn $ (T.pack "Artist: ") <> (maybe (T.pack "Unknown") id (artist metadata) )
-      TIO.putStrLn $ "Album: " <> maybe "Unknown" id (T.pack . show <$> metadata.audioProperties.duration)
-
 main :: IO ()
 main = do
+  -- dir <- getCurrentDirectory - for realise 
+  let dir ="/home/m/share/sharedFolder/test"
+      file = dir <> "/jukebox.json"
+  tvar <- Engine.initLibrary dir file
   let logHandle =
         Handlers.Logger.Handle
           { Handlers.Logger.levelLogger = Debug,
@@ -54,27 +34,12 @@ main = do
       engine =
         Handlers.Engine.Handle
           { Handlers.Engine.logger = logHandle,
-            -- Handlers.Engine.getListTracks = Engine.getListTracks (unsafeEncodeUtf "/home/m/share/sharedFolder/test"),
-            -- Handlers.Engine.getListTracks = Engine.getListTracks (unsafeEncodeUtf "/home/m/share/sharedFolder"),
-            Handlers.Engine.playTrack = undefined
+            Handlers.Engine.getLibrary = Engine.getLibrary tvar,
+            Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
+            Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
+            Handlers.Engine.playTrack = Engine.playTrack
           }
-  -- ts <- Handlers.Engine.getListTracks (engine)
-  -- dTs <- mapM (\x -> decodeFS x.path) ts
-  -- -- h1 <- decodeFS (Handlers.Engine.path (head $ ts))
-  -- print dTs
-  -- putStrLn "Hello, Haskell!"
-  -- mapM (\x -> getMD $ x.path) ts
-  -- durTs <- mapM durMD ts
-  --
-  --
-  -- mapM_ (\x -> do
-  --   -- threadDelay 9000000
-  --   print x    
-  --   p <- decodeFS x.path
-  --   callProcess "xdg-open" [p]
-  --   threadDelay (x.duration * 1000)
-  --       ) durTs
-    
+  Handlers.Engine.ghettoBluster engine    
   pure ()
 
 
