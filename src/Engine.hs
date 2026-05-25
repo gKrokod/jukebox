@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 module Engine where
 
 import Control.Exception (SomeException, displayException, throwIO, try)
@@ -39,11 +40,17 @@ saveDataBaseToFile file libT = do
   lib <- atomically (readTVar libT)
   BL.writeFile file (encode lib)
 
+
 playTrack :: Track -> IO ()
 playTrack track= do
+#if defined(mingw32_HOST_OS) || defined(__MINGW32__)
+    -- Код для Windows
+    callProcess "cmd.exe" ["/c start " <> track.path]
+#else
+    -- Код для Linux / Linux-подобных систем
     callProcess "xdg-open" [track.path]
+#endif
     threadDelay (fromIntegral track.duration * 1000)
-
 
 initLibrary :: FilePath -> FilePath -> IO (TVar Library)
 initLibrary dir file = do
