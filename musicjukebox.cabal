@@ -55,6 +55,7 @@ library
       , containers
       , bytestring
       , stm
+      , open-browser
 
 
 executable musicjukebox-exe

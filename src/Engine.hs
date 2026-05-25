@@ -20,6 +20,7 @@ import qualified Data.Map.Strict as Map
 import Control.Concurrent.STM (TVar, newTVarIO, atomically, readTVar, writeTVar)
 import Data.Time
 import Control.Monad (filterM)
+import Web.Browser
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -45,10 +46,12 @@ playTrack :: Track -> IO ()
 playTrack track= do
 #if defined(mingw32_HOST_OS) || defined(__MINGW32__)
     -- Код для Windows
-    callProcess "cmd.exe" ["/c start " <> track.path]
+    -- callProcess "cmd.exe" ["/c start " <> track.path]
+    _ <- openBrowser track.path
 #else
     -- Код для Linux / Linux-подобных систем
-    callProcess "xdg-open" [track.path]
+    -- callProcess "xdg-open" [track.path]
+    _ <- openBrowser track.path
 #endif
     threadDelay (fromIntegral track.duration * 1000)
 

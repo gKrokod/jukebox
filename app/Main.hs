@@ -23,10 +23,10 @@ import Data.Text (Text)
 main :: IO ()
 main = do
   -- dir <- getCurrentDirectory - for realise 
-  let dir ="/home/m/share/sharedFolder/test"
-      file = dir <> "/jukebox.json"
-  -- let dir ="C:\\sharedFolder" -- windows
-  --     file = dir <> "\\jukebox.json"
+  -- let dir ="/home/m/share/sharedFolder/test"
+  --     file = dir <> "/jukebox.json"
+  let dir ="C:\\sharedFolder" -- windows
+      file = dir <> "\\jukebox.json"
   tvar <- Engine.initLibrary dir file
   let logHandle =
         Handlers.Logger.Handle

@@ -1,1 +1,71 @@
-Ghcid has stopped.
+/home/m/projects/jukebox/src/Engine.hs:7:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Handlers.Logger’ is redundant
+/home/m/projects/jukebox/src/Engine.hs:8:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.Process’ is redundant
+/home/m/projects/jukebox/src/Engine.hs:17:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Data.Time’ is redundant
+/home/m/projects/jukebox/app/Main.hs:7:35: warning: [GHC-38856] [-Wunused-imports]
+    The import of ‘logMessage’
+    from module ‘Handlers.Logger’ is redundant
+/home/m/projects/jukebox/app/Main.hs:9:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.Process’ is redundant
+/home/m/projects/jukebox/app/Main.hs:10:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.OsPath’ is redundant
+/home/m/projects/jukebox/app/Main.hs:14:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Concurrent’ is redundant
+/home/m/projects/jukebox/app/Main.hs:15:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Monatone.MP3’ is redundant
+/home/m/projects/jukebox/app/Main.hs:16:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Monatone.Common’ is redundant
+/home/m/projects/jukebox/app/Main.hs:17:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Monatone.Metadata’ is redundant
+/home/m/projects/jukebox/app/Main.hs:18:1: warning: [GHC-66111] [-Wunused-imports]
+    The qualified import of ‘Data.Text.IO’ is redundant
+/home/m/projects/jukebox/app/Main.hs:19:1: warning: [GHC-66111] [-Wunused-imports]
+    The qualified import of ‘Data.Text’ is redundant
+/home/m/projects/jukebox/app/Main.hs:20:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Data.Maybe’ is redundant
+/home/m/projects/jukebox/app/Main.hs:21:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Data.Text’ is redundant
+/home/m/projects/jukebox/src/Handlers/Engine.hs:3:63: warning: [GHC-75356] [-Wdodgy-exports]
+    The export item ‘Library(..)’ suggests that
+    ‘Library’ has (in-scope) constructors or record fields,
+                  but it has none
+  |
+3 | module Handlers.Engine (ghettoBluster, Track(..), Handle(..), Library(..), updateTrack) where
+  |                                                               ^^^^^^^^^^^
+/home/m/projects/jukebox/src/Handlers/Engine.hs:5:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.OsPath’ is redundant
+  |
+5 | import System.OsPath (OsPath(..))
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/m/projects/jukebox/src/Handlers/Engine.hs:5:23: warning: [GHC-99623] [-Wdodgy-imports]
+    The import item ‘System.OsPath.Types.OsPath(..)’ suggests that
+    ‘System.OsPath.Types.OsPath’ has (in-scope) constructors or record fields,
+                                     but it has none
+  |
+5 | import System.OsPath (OsPath(..))
+  |                       ^^^^^^^^^^
+/home/m/projects/jukebox/src/Handlers/Engine.hs:8:38: warning: [GHC-38856] [-Wunused-imports]
+    The import of ‘eitherDecodeStrict’
+    from module ‘Data.Aeson’ is redundant
+  |
+8 | import Data.Aeson (FromJSON, ToJSON, eitherDecodeStrict)
+  |                                      ^^^^^^^^^^^^^^^^^^
+/home/m/projects/jukebox/src/Handlers/Engine.hs:10:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Data.Text’ is redundant
+   |
+10 | import Data.Text (Text)
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+/home/m/projects/jukebox/src/Handlers/Engine.hs:64:3: warning: [GHC-81995] [-Wunused-do-bind]
+    A do-notation statement discarded a result of type ‘[()]’
+    Suggested fix:
+      Suppress this warning by saying
+        ‘_ <- mapM
+                (\ x
+                   -> Handlers.Logger.logMessage
+                        logger Handlers.Logger.Debug (T.pack $ show x))
+                playList’
+   |
+64 |   mapM (\x -> Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show x) ) playList
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
