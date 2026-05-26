@@ -14,7 +14,7 @@ main = do
   -- dir <- getCurrentDirectory - for realise 
   let dir ="/home/m/share/sharedFolder/test"
       file = dir <> "/jukebox.json"
-  -- let dir ="C:\\sharedFolder" -- windows
+  -- let dir ="C:\\sharedFolder\\test" -- windows
   --     file = dir <> "\\jukebox.json"
   tvar <- Engine.initLibrary dir file
   let logHandle =

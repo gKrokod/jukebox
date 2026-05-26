@@ -60,8 +60,10 @@ getPlayList = (mapToPlayList <$>) . getLibrary
 ghettoBluster :: forall m. Monad m => Handle m -> m ()
 ghettoBluster h@Handle{..} = do
   playList <- sortedTracks <$> getPlayList h
+  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist size = " <> T.pack ( show $ length playList))
   mapM (\x -> Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show x) ) playList
   mapM_ (\x -> infoTrack x >> startPlay x) playList
+  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist end")
     where startPlay :: Monad m => Track -> m ()
           startPlay t = do
             playTrack t
