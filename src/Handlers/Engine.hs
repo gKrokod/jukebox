@@ -1,13 +1,12 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-module Handlers.Engine (ghettoBluster, Track(..), Handle(..), Library(..), updateTrack) where
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
+module Handlers.Engine (Library, ghettoBluster, Track(..), Handle(..), updateTrack) where
 import qualified Handlers.Logger
-import System.OsPath (OsPath(..))
-import Data.Time
-import Data.List
-import Data.Aeson (FromJSON, ToJSON, eitherDecodeStrict)
+import Data.Time ( UTCTime, addUTCTime )
+import Data.List ( sortOn )
+import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
-import Data.Text (Text)
 import Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 

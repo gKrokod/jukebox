@@ -40,8 +40,6 @@ library
       Handlers.Logger
       Engine
       Logger
-      Parser
-      Config
     build-depends: 
       aeson
       , base

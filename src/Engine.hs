@@ -4,23 +4,24 @@ module Engine where
 
 import Control.Exception (SomeException, displayException, throwIO, try)
 import Handlers.Engine (Track(..), Library, updateTrack)
-import Handlers.Logger (Log (Info), logMessage)
 import System.Process
-import Control.Concurrent
+    ( createProcess,
+      proc,
+      CreateProcess(std_err, std_in, std_out),
+      StdStream(NoStream) ) 
+import Control.Concurrent ( threadDelay )
 import System.Directory (listDirectory, doesDirectoryExist)
-import System.FilePath
+import System.FilePath ( (</>), takeExtension )
 import System.OsPath (encodeUtf)
 import Monatone.Common  (parseMetadata)
 import Monatone.Metadata  (Metadata(..), AudioProperties (duration))
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson (encode, eitherDecode)
-import Data.Time (getCurrentTime)
-import Data.Maybe
+import Data.Maybe ( fromMaybe )
 import qualified Data.Map.Strict as Map
 import Control.Concurrent.STM (TVar, newTVarIO, atomically, readTVar, writeTVar)
-import Data.Time
-import Control.Monad (filterM)
-import Web.Browser
+import Data.Time ( getCurrentTime )
+import Control.Monad (filterM, void)
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -34,7 +35,6 @@ modifyTrack libT track = do
     let newTrack = updateTrack time track
         newLib = Map.insert (newTrack.path) newTrack lib
     writeTVar libT newLib
-    
 --
 saveDataBaseToFile :: FilePath -> TVar Library -> IO ()
 saveDataBaseToFile file libT = do
@@ -46,14 +46,30 @@ playTrack :: Track -> IO ()
 playTrack track= do
 #if defined(mingw32_HOST_OS) || defined(__MINGW32__)
     -- Код для Windows
-    -- callProcess "cmd.exe" ["/c start " <> track.path]
-    _ <- openBrowser track.path
+    void $ createProcess "cmd.exe" ["/c start " <> track.path]
 #else
     -- Код для Linux / Linux-подобных систем
-    -- callProcess "xdg-open" [track.path]
-    _ <- openBrowser track.path
+    void $ createProcess (proc "xdg-open" [track.path])
 #endif
+          { std_in  = NoStream
+          , std_out = NoStream
+          , std_err = NoStream 
+          }
     threadDelay (fromIntegral track.duration * 1000)
+
+
+openInBackground :: FilePath -> IO ()
+openInBackground target = do
+  -- devNullOut <- openFile "/dev/null" WriteMode
+  -- devNullErr <- openFile "/dev/null" WriteMode
+  _ <- createProcess (proc "xdg-open" [target])
+        { std_in  = NoStream
+        , std_out = NoStream
+        , std_err = NoStream 
+        }
+  -- hClose devNullOut
+  -- hClose devNullErr
+  return ()
 
 initLibrary :: FilePath -> FilePath -> IO (TVar Library)
 initLibrary dir file = do
