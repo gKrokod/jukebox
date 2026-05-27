@@ -7,6 +7,7 @@ import Handlers.Engine (Track(..), Library, updateTrack)
 import System.Process
     ( createProcess,
       proc,
+      waitForProcess,
       CreateProcess(std_err, std_in, std_out),
       StdStream(NoStream) ) 
 import Control.Concurrent ( threadDelay )
@@ -41,9 +42,28 @@ saveDataBaseToFile file libT = do
   lib <- atomically (readTVar libT)
   BL.writeFile file (encode lib)
 
-
+--- ***
 playTrack :: Track -> IO ()
-playTrack track= do
+playTrack track = do
+  (_, _, _, ph) <-
+    createProcess (proc "ffplay"
+      [ "-nodisp"
+      , "-autoexit"
+      , "-loglevel", "quiet"
+      , track.path
+      ])
+      { std_in  = NoStream
+      , std_out = NoStream
+      , std_err = NoStream
+      }
+
+  _ <- waitForProcess ph
+  pure ()
+--- ***
+
+
+playTrack2 :: Track -> IO ()
+playTrack2 track= do
 #if defined(mingw32_HOST_OS) || defined(__MINGW32__)
     -- Код для Windows
     void $ createProcess "cmd.exe" ["/c start " <> track.path]
