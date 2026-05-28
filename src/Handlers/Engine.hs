@@ -47,13 +47,16 @@ updateTrack time track = track {
   lastPlay = Just time,
   planPlay = Just $ addUTCTime (fromIntegral track.interval * 86400) time,
   count = succ track.count,
-  interval = updateInterval track.interval
+  interval = updateInterval track.count track.interval
                                } 
-  where updateInterval :: Word -> Word
-        updateInterval i | i >= 60 = i + div i 10
-                         | i == 0 = succ i
-                         | otherwise = i * 2
---
+  where updateInterval :: Word -> Word -> Word
+        -- 1 = 1
+        -- 2 = 6
+        -- n = interval * 1.7
+        updateInterval 2 _ = 6
+        updateInterval _ i  = max 1 (ceiling $ fromIntegral i * baseEaseFactor)
+          where baseEaseFactor = 1.7 :: Double
+
 getPlayList :: (Monad m) => Handle m -> m (PlayList)
 getPlayList = (mapToPlayList <$>) . getLibrary
 
@@ -73,13 +76,3 @@ ghettoBluster h@Handle{..} = do
           infoTrack t = do
             Handlers.Logger.logMessage logger Handlers.Logger.Debug "Играет трек"
             Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show t)
-
-
-  -- let logHandle =
-  --       Handlers.Logger.Handle
-  --         { Handlers.Logger.levelLogger = Debug,
-  --           Handlers.Logger.writeLog = Logger.writeLog
-  --         }
-  --     engine =
-  --       Handlers.Engine.Handle
-  --         { Handlers.Engine.logger = logHandle,

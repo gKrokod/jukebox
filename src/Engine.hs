@@ -10,7 +10,6 @@ import System.Process
       waitForProcess,
       CreateProcess(std_err, std_in, std_out),
       StdStream(NoStream) ) 
-import Control.Concurrent ( threadDelay )
 import System.Directory (listDirectory, doesDirectoryExist)
 import System.FilePath ( (</>), takeExtension )
 import System.OsPath (encodeUtf)
@@ -22,7 +21,7 @@ import Data.Maybe ( fromMaybe )
 import qualified Data.Map.Strict as Map
 import Control.Concurrent.STM (TVar, newTVarIO, atomically, readTVar, writeTVar)
 import Data.Time ( getCurrentTime )
-import Control.Monad (filterM, void)
+import Control.Monad (filterM)
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -56,40 +55,10 @@ playTrack track = do
       , std_out = NoStream
       , std_err = NoStream
       }
-
   _ <- waitForProcess ph
   pure ()
 --- ***
 
-
-playTrack2 :: Track -> IO ()
-playTrack2 track= do
-#if defined(mingw32_HOST_OS) || defined(__MINGW32__)
-    -- Код для Windows
-    void $ createProcess "cmd.exe" ["/c start " <> track.path]
-#else
-    -- Код для Linux / Linux-подобных систем
-    void $ createProcess (proc "xdg-open" [track.path])
-#endif
-          { std_in  = NoStream
-          , std_out = NoStream
-          , std_err = NoStream 
-          }
-    threadDelay (fromIntegral track.duration * 1000)
-
-
-openInBackground :: FilePath -> IO ()
-openInBackground target = do
-  -- devNullOut <- openFile "/dev/null" WriteMode
-  -- devNullErr <- openFile "/dev/null" WriteMode
-  _ <- createProcess (proc "xdg-open" [target])
-        { std_in  = NoStream
-        , std_out = NoStream
-        , std_err = NoStream 
-        }
-  -- hClose devNullOut
-  -- hClose devNullErr
-  return ()
 
 initLibrary :: FilePath -> FilePath -> IO (TVar Library)
 initLibrary dir file = do
