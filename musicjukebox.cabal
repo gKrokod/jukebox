@@ -38,6 +38,7 @@ library
     exposed-modules:
       Handlers.Engine
       Handlers.Logger
+      Hotkey.Ubunta
       Engine
       Logger
     build-depends: 
@@ -53,7 +54,6 @@ library
       , containers
       , bytestring
       , stm
-      , open-browser
 
 
 executable musicjukebox-exe
@@ -64,12 +64,14 @@ executable musicjukebox-exe
     build-depends:    
       base
       , musicjukebox
+      ,bytestring
       , directory
       , process
       , filepath
       , monatone
       , text
       , time
+      , X11
     -- Directories containing source files.
     hs-source-dirs:   app
 

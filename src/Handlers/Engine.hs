@@ -10,6 +10,23 @@ import GHC.Generics (Generic)
 import Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
+ghettoBluster :: forall m. Monad m => Handle m -> m ()
+ghettoBluster h@Handle{..} = do
+  playList <- sortedTracks <$> getPlayList h
+  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist size = " <> T.pack ( show $ length playList))
+  -- mapM (\x -> Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show x) ) playList
+  mapM_ (\x -> infoTrack x >> startPlay x) playList
+  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist end")
+    where startPlay :: Monad m => Track -> m ()
+          startPlay t = do
+            playTrack t
+            modifyTrack t
+            saveDataBaseToFile 
+          infoTrack :: Monad m => Track -> m ()
+          infoTrack t = do
+            Handlers.Logger.logMessage logger Handlers.Logger.Debug "Играет трек"
+            Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show t)
+
 type Library = Map.Map FilePath Track
 
 newtype PlayList = SortedTracks { sortedTracks :: [Track]} -- SorteList
@@ -60,19 +77,3 @@ updateTrack time track = track {
 getPlayList :: (Monad m) => Handle m -> m (PlayList)
 getPlayList = (mapToPlayList <$>) . getLibrary
 
-ghettoBluster :: forall m. Monad m => Handle m -> m ()
-ghettoBluster h@Handle{..} = do
-  playList <- sortedTracks <$> getPlayList h
-  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist size = " <> T.pack ( show $ length playList))
-  mapM (\x -> Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show x) ) playList
-  mapM_ (\x -> infoTrack x >> startPlay x) playList
-  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist end")
-    where startPlay :: Monad m => Track -> m ()
-          startPlay t = do
-            playTrack t
-            modifyTrack t
-            saveDataBaseToFile 
-          infoTrack :: Monad m => Track -> m ()
-          infoTrack t = do
-            Handlers.Logger.logMessage logger Handlers.Logger.Debug "Играет трек"
-            Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show t)
