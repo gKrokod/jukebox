@@ -1,1 +1,9 @@
-Ghcid has stopped.
+/home/m/projects/jukebox/app/Main.hs:8:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Graphics.X11.Xlib.Extras’ is redundant
+/home/m/projects/jukebox/app/Main.hs:9:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Graphics.X11.Types’ is redundant
+/home/m/projects/jukebox/app/Main.hs:13:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Concurrent.Async’ is redundant
+/home/m/projects/jukebox/app/Main.hs:28:3: warning: [GHC-63397] [-Wname-shadowing]
+    This binding for ‘p’ shadows the existing binding
+      bound at /home/m/projects/jukebox/app/Main.hs:24:3

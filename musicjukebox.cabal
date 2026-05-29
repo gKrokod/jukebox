@@ -72,6 +72,8 @@ executable musicjukebox-exe
       , text
       , time
       , X11
+      , stm
+      , async
     -- Directories containing source files.
     hs-source-dirs:   app
 
