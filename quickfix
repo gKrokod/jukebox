@@ -1,9 +1,117 @@
+/home/m/projects/jukebox/src/Engine.hs:22:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Concurrent.STM’ is redundant
+/home/m/projects/jukebox/src/Engine.hs:25:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Data.Time.Calendar’ is redundant
+/home/m/projects/jukebox/src/Engine.hs:29:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Data.Time’ is redundant
+/home/m/projects/jukebox/src/Engine.hs:72:5: warning: [GHC-18042] [-Wtype-defaults]
+    • Defaulting the type variable ‘a0’ to type ‘[Char]’ in the following constraints
+        (Show a0)
+          arising from a use of ‘print’
+          at /home/m/projects/jukebox/src/Engine.hs:72:5-9
+        (ghc-internal-9.1401.0:GHC.Internal.Data.String.IsString a0)
+          arising from the literal ‘"Pause"’
+          at /home/m/projects/jukebox/src/Engine.hs:72:11-17
+    • In a stmt of a 'do' block: print "Pause"
+      In the expression:
+        do print "Pause"
+           print p
+           offsetStart <- atomically $ readTVar offset
+           print "Offset:"
+           ....
+      In a stmt of a 'do' block:
+        if p == On then
+            playTrackSTM pause offset track
+        else
+            do print "Pause"
+               print p
+               offsetStart <- atomically $ readTVar offset
+               ....
+/home/m/projects/jukebox/src/Engine.hs:75:5: warning: [GHC-18042] [-Wtype-defaults]
+    • Defaulting the type variable ‘a0’ to type ‘[Char]’ in the following constraints
+        (Show a0)
+          arising from a use of ‘print’
+          at /home/m/projects/jukebox/src/Engine.hs:75:5-9
+        (ghc-internal-9.1401.0:GHC.Internal.Data.String.IsString a0)
+          arising from the literal ‘"Offset:"’
+          at /home/m/projects/jukebox/src/Engine.hs:75:11-19
+    • In a stmt of a 'do' block: print "Offset:"
+      In the expression:
+        do print "Pause"
+           print p
+           offsetStart <- atomically $ readTVar offset
+           print "Offset:"
+           ....
+      In a stmt of a 'do' block:
+        if p == On then
+            playTrackSTM pause offset track
+        else
+            do print "Pause"
+               print p
+               offsetStart <- atomically $ readTVar offset
+               ....
+/home/m/projects/jukebox/app/Main.hs:7:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Graphics.X11.Xlib’ is redundant
 /home/m/projects/jukebox/app/Main.hs:8:1: warning: [GHC-66111] [-Wunused-imports]
     The import of ‘Graphics.X11.Xlib.Extras’ is redundant
 /home/m/projects/jukebox/app/Main.hs:9:1: warning: [GHC-66111] [-Wunused-imports]
     The import of ‘Graphics.X11.Types’ is redundant
-/home/m/projects/jukebox/app/Main.hs:13:1: warning: [GHC-66111] [-Wunused-imports]
-    The import of ‘Control.Concurrent.Async’ is redundant
-/home/m/projects/jukebox/app/Main.hs:28:3: warning: [GHC-63397] [-Wname-shadowing]
+/home/m/projects/jukebox/app/Main.hs:10:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Monad’ is redundant
+/home/m/projects/jukebox/app/Main.hs:12:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Concurrent’ is redundant
+/home/m/projects/jukebox/app/Main.hs:25:1: warning: [GHC-40910] [-Wunused-top-binds]
+    Defined but not used: ‘main2’
+/home/m/projects/jukebox/app/Main.hs:31:5: warning: [GHC-18042] [-Wtype-defaults]
+    • Defaulting the type variable ‘a0’ to type ‘[Char]’ in the following constraints
+        (Show a0)
+          arising from a use of ‘print’
+          at /home/m/projects/jukebox/app/Main.hs:31:5-9
+        (ghc-internal-9.1401.0:GHC.Internal.Data.String.IsString a0)
+          arising from the literal ‘"I am here"’
+          at /home/m/projects/jukebox/app/Main.hs:31:11-21
+    • In a stmt of a 'do' block: print "I am here"
+      In the expression:
+        do print "I am here"
+           getLine >>= putStrLn
+           p <- atomically $ readTVar pause
+           print p
+      In the second argument of ‘($)’, namely
+        ‘\ _
+           -> do print "I am here"
+                 getLine >>= putStrLn
+                 ....’
+/home/m/projects/jukebox/app/Main.hs:33:5: warning: [GHC-63397] [-Wname-shadowing]
     This binding for ‘p’ shadows the existing binding
-      bound at /home/m/projects/jukebox/app/Main.hs:24:3
+      bound at /home/m/projects/jukebox/app/Main.hs:27:3
+/home/m/projects/jukebox/app/Main.hs:65:5: warning: [GHC-18042] [-Wtype-defaults]
+    • Defaulting the type variable ‘a0’ to type ‘[Char]’ in the following constraints
+        (Show a0)
+          arising from a use of ‘print’
+          at /home/m/projects/jukebox/app/Main.hs:65:5-9
+        (ghc-internal-9.1401.0:GHC.Internal.Data.String.IsString a0)
+          arising from the literal ‘"I am here"’
+          at /home/m/projects/jukebox/app/Main.hs:65:11-21
+    • In a stmt of a 'do' block: print "I am here"
+      In the expression:
+        do Handlers.Engine.ghettoBluster engine
+           print "I am here"
+           getLine >>= putStrLn
+           p <- atomically $ readTVar pause
+           ....
+      In the second argument of ‘($)’, namely
+        ‘\ _
+           -> do Handlers.Engine.ghettoBluster engine
+                 print "I am here"
+                 ....’
+/home/m/projects/jukebox/app/Main.hs:67:5: warning: [GHC-63397] [-Wname-shadowing]
+    This binding for ‘p’ shadows the existing binding
+      bound at /home/m/projects/jukebox/app/Main.hs:41:3
+/home/m/projects/jukebox/src/Hotkey/Ubunta.hs:7:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Concurrent’ is redundant
+/home/m/projects/jukebox/src/Hotkey/Ubunta.hs:8:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Control.Concurrent.Async’ is redundant
+/home/m/projects/jukebox/src/Hotkey/Ubunta.hs:11:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Graphics.X11.Xlib.Extras’ is redundant
+/home/m/projects/jukebox/src/Hotkey/Ubunta.hs:12:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘Graphics.X11.Types’ is redundant

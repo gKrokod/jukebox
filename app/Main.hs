@@ -11,63 +11,58 @@ import Control.Monad (forever, when)
 import Control.Concurrent.STM
 import Control.Concurrent
 import Control.Concurrent.Async 
+import Hotkey.Ubunta
+import Hotkey.Types
 
-data Pause where
-  On :: Pause
-  Off :: Pause
-  deriving Show
+import qualified Handlers.Engine
+import Handlers.Logger (Log (..))
+import qualified Handlers.Logger
+import qualified Logger
+import qualified Engine
+
+
+main2 :: IO ()
+main2 = do
+  pause <- atomically $ newTVar Off
+  p <- atomically $ readTVar pause
+  print p
+  
+  withAsync(getKey pause) $ \_ -> do
+    print "I am here"
+    getLine >>= putStrLn
+    p <- atomically $ readTVar pause
+    print p
 
 
 main :: IO ()
 main = do
   pause <- atomically $ newTVar Off
+  offset <- atomically $ newTVar 0 
   p <- atomically $ readTVar pause
   print p
-  _ <- forkIO $ getKey pause
-  getLine >>= putStrLn
-  p <- atomically $ readTVar pause
-  print p
-  
-  -- withAsync(getKey pause) $ \_ -> do
-  --   getLine >>= putStrLn
-  --   p <- atomically $ readTVar pause
-  --   print p
-
-
-getKey :: TVar Pause -> IO ()
-getKey pause = do
-    -- Подключаемся к X-серверу
-    dpy <- openDisplay ""
-
-    let scr  = defaultScreen dpy
-    root <- rootWindow dpy scr
-
-    -- Получаем keycode для F7 (должен совпасть с твоим 73)
-    -- f7Code <- keysymToKeycode dpy xK_A
-    f7Code <- keysymToKeycode dpy xK_F7
-    f8Code <- keysymToKeycode dpy xK_F8
-    putStrLn $ "F7 keycode = " ++ show f7Code
-
-    -- Глобально захватываем F7 на root-окне
-    -- AnyModifier, чтобы не ломалось из-за NumLock/CapsLock
-    grabKey dpy f7Code anyModifier root True grabModeAsync grabModeAsync
-    grabKey dpy f8Code anyModifier root True grabModeAsync grabModeAsync
-
-    -- Просим у root события нажатия клавиш
-    selectInput dpy root keyPressMask
-    sync dpy False
-
-    putStrLn "Глобально слушаю F7 (X11). Нажимай F7, Ctrl+C для выхода."
-
-    allocaXEvent $ \ev -> forever $ do
-    -- allocaXEvent $ \ev -> do
-        nextEvent dpy ev
-        t <- get_EventType ev
-        when (t == keyPress) $ do
-            (_, _, _, _, _, _, _, _mods, keycode, _) <- get_KeyEvent ev
-            when (keycode == f7Code) $ do
-                atomically $ writeTVar pause On 
-                putStrLn "Нажата F7 (перехвачено глобально)"
-            when (keycode == f8Code) $ do
-                atomically $ writeTVar pause Off 
-                putStrLn "Нажата F8 (перехвачено глобально)"
+  -- dir <- getCurrentDirectory - for realise 
+  let dir ="/home/m/share/sharedFolder/test"
+      file = dir <> "/jukebox.json"
+  -- let dir ="C:\\sharedFolder\\test" -- windows
+  --     file = dir <> "\\jukebox.json"
+  tvar <- Engine.initLibrary dir file
+  let logHandle =
+        Handlers.Logger.Handle
+          { Handlers.Logger.levelLogger = Debug,
+            Handlers.Logger.writeLog = Logger.writeLog
+          }
+      engine =
+        Handlers.Engine.Handle
+          { Handlers.Engine.logger = logHandle,
+            Handlers.Engine.getLibrary = Engine.getLibrary tvar,
+            Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
+            Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
+            -- Handlers.Engine.playTrack = Engine.playTrack,
+            Handlers.Engine.playTrack = Engine.playTrackSTM pause offset
+          }
+  withAsync(getKey pause) $ \_ -> do
+    Handlers.Engine.ghettoBluster engine    
+    print "I am here"
+    getLine >>= putStrLn
+    p <- atomically $ readTVar pause
+    print p

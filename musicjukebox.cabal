@@ -28,8 +28,7 @@ common common-extensions
       DataKinds
       GADTs
 common warnings
-  ghc-options: -Wall
-
+  ghc-options: -Wall -threaded
 library 
     import:
         warnings
@@ -39,6 +38,7 @@ library
       Handlers.Engine
       Handlers.Logger
       Hotkey.Ubunta
+      Hotkey.Types
       Engine
       Logger
     build-depends: 
@@ -54,6 +54,8 @@ library
       , containers
       , bytestring
       , stm
+      , async
+      , X11
 
 
 executable musicjukebox-exe

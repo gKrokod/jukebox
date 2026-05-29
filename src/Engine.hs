@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 module Engine where
-
+import Hotkey.Types
 import Control.Exception (SomeException, displayException, throwIO, try)
 import Handlers.Engine (Track(..), Library, updateTrack)
 import System.Process
-    ( createProcess,
+    ( createProcess, terminateProcess,
       proc,
       waitForProcess,
       CreateProcess(std_err, std_in, std_out),
@@ -20,8 +20,13 @@ import Data.Aeson (encode, eitherDecode)
 import Data.Maybe ( fromMaybe )
 import qualified Data.Map.Strict as Map
 import Control.Concurrent.STM (TVar, newTVarIO, atomically, readTVar, writeTVar)
-import Data.Time ( getCurrentTime )
+import Data.Time 
 import Control.Monad (filterM)
+import Data.Time.Calendar
+import Control.Concurrent.STM
+import Control.Concurrent
+import Control.Concurrent.Async 
+import Data.Time(nominalDiffTimeToSeconds)
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -58,6 +63,62 @@ playTrack track = do
   _ <- waitForProcess ph
   pure ()
 --- ***
+
+playTrackSTM :: TVar Pause -> TVar Double -> Track -> IO ()
+playTrackSTM pause offset track = do
+  p <- atomically $ readTVar pause
+  if p == On then playTrackSTM pause offset track
+  else do
+    print "Pause"
+    print p
+    offsetStart <- atomically $ readTVar offset
+    print "Offset:"
+    print offsetStart
+    timeStart <- getCurrentTime
+    (_, _, _, ph) <-
+      createProcess (proc "ffplay"
+        [ "-nodisp"
+        , "-autoexit"
+        , "-ss", show offsetStart 
+        , "-loglevel", "quiet"
+        , track.path
+        ])
+        { std_in  = NoStream
+        , std_out = NoStream
+        , std_err = NoStream
+        }
+    -- let timeLeft = max 0 1
+    let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
+
+    timeout <- race (threadDelay (timeLeft * 1000)) (pressPause pause)
+    case timeout of
+      Left _ -> do 
+        terminateProcess ph
+        atomically $ writeTVar offset 0 
+      Right timePause -> do 
+        terminateProcess ph
+        let offset' = (offsetStart + deltaOffset timeStart timePause)
+        if offset' >= fromIntegral track.duration then do
+          atomically $ writeTVar offset 0
+        else do
+          atomically $ writeTVar offset offset'
+          playTrackSTM pause offset track
+
+deltaOffset :: UTCTime -> UTCTime -> Double
+deltaOffset start end = realToFrac $ diffUTCTime end start
+
+pressPause :: TVar Pause -> IO (UTCTime)
+pressPause pause = do
+  atomically $ pressPause' pause
+  getCurrentTime
+
+pressPause' :: TVar Pause -> STM ()
+pressPause' pause = do
+  statusPause <- readTVar pause
+  case statusPause of
+    On -> pure ()
+    Off -> retry
+
 
 
 initLibrary :: FilePath -> FilePath -> IO (TVar Library)
