@@ -69,11 +69,12 @@ playTrackSTM pause offset track = do
   p <- atomically $ readTVar pause
   if p == On then playTrackSTM pause offset track
   else do
-    print "Pause"
+    print "Pause for track"
     print p
     offsetStart <- atomically $ readTVar offset
-    print "Offset:"
+    print "Offset for track:"
     print offsetStart
+    print track.path
     timeStart <- getCurrentTime
     (_, _, _, ph) <-
       createProcess (proc "ffplay"

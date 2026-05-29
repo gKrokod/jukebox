@@ -19,8 +19,8 @@ ghettoBluster h@Handle{..} = do
   Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist end")
     where startPlay :: Monad m => Track -> m ()
           startPlay t = do
-            playTrack t
             modifyTrack t
+            playTrack t
             saveDataBaseToFile 
           infoTrack :: Monad m => Track -> m ()
           infoTrack t = do
