@@ -29,7 +29,7 @@ common common-extensions
       GADTs
       CPP
 common warnings
-  ghc-options: -Wall -threaded
+  ghc-options: -O2 -Wall -threaded
 library 
     import:
         warnings
@@ -68,12 +68,12 @@ library
     build-depends:
         X11
 
-
 executable musicjukebox-exe
     import:
       warnings
       , common-extensions
     main-is:          Main.hs
+
     build-depends:    
       base
       , musicjukebox
@@ -89,7 +89,7 @@ executable musicjukebox-exe
     -- Directories containing source files.
     hs-source-dirs:   app
 
-    
+
 benchmark musicjukebox
     -- Import common warning flags.
     import:
