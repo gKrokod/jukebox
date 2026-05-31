@@ -1,7 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-      
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+module Main (main) where
 
-module Main where
+
+import Control.Concurrent.STM
+import Control.Concurrent.Async 
+import Hotkey.Ubunta (getKey)
+import Hotkey.Types
 
 import qualified Handlers.Engine
 import Handlers.Logger (Log (..))
@@ -9,8 +15,13 @@ import qualified Handlers.Logger
 import qualified Logger
 import qualified Engine
 
+
 main :: IO ()
 main = do
+  pause <- atomically $ newTVar Off
+  offset <- atomically $ newTVar 0 
+  p <- atomically $ readTVar pause
+  print p
   -- dir <- getCurrentDirectory - for realise 
   let dir ="/home/m/share/sharedFolder/test"
       file = dir <> "/jukebox.json"
@@ -28,9 +39,10 @@ main = do
             Handlers.Engine.getLibrary = Engine.getLibrary tvar,
             Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
             Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
-            Handlers.Engine.playTrack = Engine.playTrack
+            -- Handlers.Engine.playTrack = Engine.playTrack,
+            Handlers.Engine.playTrack = Engine.playTrackSTM pause offset
           }
-  Handlers.Engine.ghettoBluster engine    
-  pure ()
-
-
+  withAsync(getKey pause) $ \_ -> do
+    Handlers.Engine.ghettoBluster engine    
+    putStrLn "Playlist end. Please type anything"
+    getLine >>= putStrLn
