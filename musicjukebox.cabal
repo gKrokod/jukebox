@@ -38,6 +38,7 @@ library
       Handlers.Engine
       Handlers.Logger
       Hotkey.Types
+      Hotkey.Grab
       Engine
       Logger
     build-depends: 
