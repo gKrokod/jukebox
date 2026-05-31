@@ -1,6 +1,4 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# OPTIONS_GHC -Wno-unused-do-bind #-}
 module Handlers.Engine (Library, ghettoBluster, Track(..), Handle(..), updateTrack) where
 import qualified Handlers.Logger
 import Data.Time ( UTCTime, addUTCTime )
@@ -14,7 +12,6 @@ ghettoBluster :: forall m. Monad m => Handle m -> m ()
 ghettoBluster h@Handle{..} = do
   playList <- sortedTracks <$> getPlayList h
   Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist size = " <> T.pack ( show $ length playList))
-  -- mapM (\x -> Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show x) ) playList
   mapM_ (\x -> infoTrack x >> startPlay x) playList
   Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist end")
     where startPlay :: Monad m => Track -> m ()
@@ -39,14 +36,12 @@ mapToPlayList = SortedTracks
 
 data Track = Track
   { 
-    -- path :: Text, -- unique
     path :: FilePath, -- unique
     duration :: Word, -- ms
     interval :: Word, -- через сколько day ставить
     count :: Word, 
     lastPlay :: Maybe UTCTime,
     planPlay :: Maybe UTCTime
-    -- factor :: Int -- newInterbal = CurrentInterval * Factor. Assess 5 4 3 2 1 
   }  
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON)

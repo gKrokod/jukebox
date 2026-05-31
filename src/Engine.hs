@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
 module Engine where
 import Hotkey.Types ( Pause(..) )
 import Control.Exception (SomeException, displayException, throwIO, try)
@@ -7,7 +5,6 @@ import Handlers.Engine (Track(..), Library, updateTrack)
 import System.Process
     ( createProcess, terminateProcess,
       proc,
-      waitForProcess,
       CreateProcess(std_err, std_in, std_out),
       StdStream(NoStream) ) 
 import System.Directory (listDirectory, doesDirectoryExist)
@@ -44,35 +41,12 @@ saveDataBaseToFile file libT = do
   lib <- atomically (readTVar libT)
   BL.writeFile file (encode lib)
 
---- ***
-playTrack :: Track -> IO ()
-playTrack track = do
-  (_, _, _, ph) <-
-    createProcess (proc "ffplay"
-      [ "-nodisp"
-      , "-autoexit"
-      , "-loglevel", "quiet"
-      , track.path
-      ])
-      { std_in  = NoStream
-      , std_out = NoStream
-      , std_err = NoStream
-      }
-  _ <- waitForProcess ph
-  pure ()
---- ***
-
 playTrackSTM :: TVar Pause -> TVar Double -> Track -> IO ()
 playTrackSTM pause offset track = do
   p <- atomically $ readTVar pause
   if p == On then playTrackSTM pause offset track
   else do
-    -- print "Pause for track"
-    -- print p
     offsetStart <- atomically $ readTVar offset
-    -- print "Offset for track:"
-    -- print offsetStart
-    -- print track.path
     timeStart <- Data.Time.getCurrentTime
     (_, _, _, ph) <-
       createProcess (proc "ffplay"
@@ -158,18 +132,7 @@ migration dir file = do
     Left _ -> BL.writeFile file (encode dirDB) >> pure dirDB
     Right fileDB -> do
       pure $ Map.union fileDB dirDB
---my version  
--- loadFromDir :: FilePath -> IO Library
--- loadFromDir dir = do
---   files <- listDirectory dir
---   let mp3s = [ (dir </> f) | f <- files, takeExtension f == (".mp3") ]
---   mp3m <- mapM parseTrack mp3s
---   pure (Map.fromList $ zip mp3s mp3m)
- 
 
--- Предположим, что ваши типы выглядят так:
--- type Library = Map.Map FilePath Track
--- parseTrack :: FilePath -> IO Track
 -- *****
 loadFromDir :: FilePath -> IO Library
 loadFromDir dir = do

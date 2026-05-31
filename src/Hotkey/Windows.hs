@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 module Hotkey.Windows (getKey)
    where
 

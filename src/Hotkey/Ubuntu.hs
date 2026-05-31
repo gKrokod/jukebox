@@ -1,7 +1,4 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE RecordWildCards #-}
-
-module Hotkey.Ubunta (getKey)
+module Hotkey.Ubuntu (getKey)
    where
 
 import Control.Concurrent.STM (atomically, writeTVar, TVar)

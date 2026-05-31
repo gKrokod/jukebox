@@ -1,5 +1,3 @@
-{-# LANGUAGE DerivingStrategies #-}
-
 module Handlers.Logger (Handle (..), Log (..), logMessage) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..))

@@ -27,6 +27,7 @@ common common-extensions
       BangPatterns
       DataKinds
       GADTs
+      CPP
 common warnings
   ghc-options: -Wall -threaded
 library 
@@ -63,7 +64,7 @@ library
         Win32
  else
     other-modules:
-        Hotkey.Ubunta
+        Hotkey.Ubuntu
     build-depends:
         X11
 
