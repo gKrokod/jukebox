@@ -1,16 +1,12 @@
 {-# LANGUAGE CPP #-}
-module Hotkey.Windows
+module Hotkey.Windows (getKey)
    where
 import Control.Concurrent.STM ( atomically, writeTVar, TVar )
 import Control.Monad (forever, when)
 import Hotkey.Types ( Pause(..) )
-
 import Control.Concurrent (threadDelay)
-
 import qualified Data.Bits as B
-#ifdef mingw32_HOST_OS
 import Graphics.Win32.Key
-#endif
 
 -- Какие клавиши нас интересуют
 data Key = KeyF7 | KeyF8 | KeyF9

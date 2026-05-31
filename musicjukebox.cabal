@@ -37,8 +37,6 @@ library
     exposed-modules:
       Handlers.Engine
       Handlers.Logger
-      Hotkey.Ubunta
-      Hotkey.Windows
       Hotkey.Types
       Engine
       Logger
@@ -58,9 +56,13 @@ library
       , async
 
  if os(windows)
+    other-modules:
+        Hotkey.Windows
     build-depends:
         Win32
  else
+    other-modules:
+        Hotkey.Ubunta
     build-depends:
         X11
 

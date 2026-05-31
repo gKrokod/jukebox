@@ -11,13 +11,8 @@ import Handlers.Logger (Log (..))
 import qualified Handlers.Logger
 import qualified Logger
 import qualified Engine
+import Hotkey.Grab (getKey)
 
-
-#ifdef mingw32_HOST_OS
-import qualified Hotkey.Windows as Platform
-#else
-import qualified Hotkey.Ubunta as Platform
-#endif
 
 main :: IO ()
 main = do
@@ -48,7 +43,7 @@ main = do
             -- Handlers.Engine.playTrack = Engine.playTrack,
             Handlers.Engine.playTrack = Engine.playTrackSTM pause offset
           }
-  withAsync(Platform.getKey pause) $ \_ -> do
+  withAsync(getKey pause) $ \_ -> do
     Handlers.Engine.ghettoBluster engine    
     putStrLn "Playlist end. Please type anything"
     getLine >>= putStrLn
