@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Hotkey.Ubunta
@@ -5,6 +6,9 @@ module Hotkey.Ubunta
 import Control.Concurrent.STM ( atomically, writeTVar, TVar )
 import Control.Monad (forever, when)
 import Hotkey.Types ( Pause(..) )
+#ifdef mingw32_HOST_OS
+import Data.Text
+#else
 import Graphics.X11.Xlib
     ( anyModifier,
       grabModeAsync,
@@ -24,7 +28,7 @@ import Graphics.X11.Xlib
       sync,
       grabKey,
       keysymToKeycode )
-
+#endif
 
 getKey :: TVar Pause -> IO ()
 getKey pause = do

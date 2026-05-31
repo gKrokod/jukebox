@@ -6,10 +6,6 @@ import Control.Monad (forever, when)
 import Hotkey.Types ( Pause(..) )
 
 import Control.Concurrent (threadDelay)
-import qualified Data.Bits as B ((.&.))
-#ifdef mingw32_HOST_OS
-import Graphics.Win32.Key
-#endif
 
 import qualified Data.Bits as B
 #ifdef mingw32_HOST_OS

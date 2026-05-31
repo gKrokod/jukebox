@@ -80,7 +80,6 @@ executable musicjukebox-exe
       , monatone
       , text
       , time
-      , X11
       , stm
       , async
     -- Directories containing source files.

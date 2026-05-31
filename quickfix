@@ -13,13 +13,8 @@
   |
 6 | import Hotkey.Types ( Pause(..) )
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/home/m/projects/jukebox/src/Hotkey/Windows.hs:9:1: warning: [GHC-66111] [-Wunused-imports]
-    The qualified import of ‘Data.Bits’ is redundant
-  |
-9 | import qualified Data.Bits as B ((.&.))
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/home/m/projects/jukebox/src/Hotkey/Windows.hs:33:8: warning: [GHC-40910] [-Wunused-matches]
+/home/m/projects/jukebox/src/Hotkey/Windows.hs:29:8: warning: [GHC-40910] [-Wunused-matches]
     Defined but not used: ‘vk’
    |
-33 | isDown vk = do
+29 | isDown vk = do
    |        ^^
