@@ -1,12 +1,9 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP #-}
 module Main (main) where
 
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async 
-import Hotkey.Ubunta (getKey)
 import Hotkey.Types
 
 import qualified Handlers.Engine
@@ -15,6 +12,12 @@ import qualified Handlers.Logger
 import qualified Logger
 import qualified Engine
 
+
+#ifdef mingw32_HOST_OS
+import qualified Hotkey.Windows as Platform
+#else
+import qualified Hotkey.Ubunta as Platform
+#endif
 
 main :: IO ()
 main = do
@@ -42,7 +45,7 @@ main = do
             -- Handlers.Engine.playTrack = Engine.playTrack,
             Handlers.Engine.playTrack = Engine.playTrackSTM pause offset
           }
-  withAsync(getKey pause) $ \_ -> do
+  withAsync(Platform.getKey pause) $ \_ -> do
     Handlers.Engine.ghettoBluster engine    
     putStrLn "Playlist end. Please type anything"
     getLine >>= putStrLn

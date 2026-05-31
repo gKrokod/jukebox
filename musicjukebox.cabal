@@ -58,6 +58,10 @@ library
       , async
       , X11
 
+ if os(windows)
+    build-depends:
+        Win32
+
 
 executable musicjukebox-exe
     import:
