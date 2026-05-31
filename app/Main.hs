@@ -25,11 +25,14 @@ main = do
   offset <- atomically $ newTVar 0 
   p <- atomically $ readTVar pause
   print p
-  -- dir <- getCurrentDirectory - for realise 
+#ifdef mingw32_HOST_OS
+  let dir ="C:\\sharedFolder\\test" -- windows
+      file = dir <> "\\jukebox.json"
+#else
   let dir ="/home/m/share/sharedFolder/test"
       file = dir <> "/jukebox.json"
-  -- let dir ="C:\\sharedFolder\\test" -- windows
-  --     file = dir <> "\\jukebox.json"
+#endif
+  -- dir <- getCurrentDirectory - for realise 
   tvar <- Engine.initLibrary dir file
   let logHandle =
         Handlers.Logger.Handle
