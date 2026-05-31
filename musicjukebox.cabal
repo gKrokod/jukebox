@@ -38,6 +38,7 @@ library
       Handlers.Engine
       Handlers.Logger
       Hotkey.Ubunta
+      Hotkey.Windows
       Hotkey.Types
       Engine
       Logger

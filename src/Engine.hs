@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 module Engine where
-import Hotkey.Types
+import Hotkey.Types ( Pause(..) )
 import Control.Exception (SomeException, displayException, throwIO, try)
 import Handlers.Engine (Track(..), Library, updateTrack)
 import System.Process
@@ -19,14 +19,12 @@ import qualified Data.ByteString.Lazy as BL
 import Data.Aeson (encode, eitherDecode)
 import Data.Maybe ( fromMaybe )
 import qualified Data.Map.Strict as Map
-import Control.Concurrent.STM (TVar, newTVarIO, atomically, readTVar, writeTVar)
-import Data.Time 
+import Data.Time ( UTCTime, diffUTCTime, getCurrentTime ) 
 import Control.Monad (filterM)
-import Data.Time.Calendar
+import Control.Concurrent ( threadDelay )
+import Control.Concurrent.Async ( race )
 import Control.Concurrent.STM
-import Control.Concurrent
-import Control.Concurrent.Async 
-import Data.Time(nominalDiffTimeToSeconds)
+    ( atomically, newTVarIO, readTVar, retry, writeTVar, STM, TVar )
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -34,7 +32,7 @@ getLibrary libT = do
 
 modifyTrack :: TVar Library -> Track -> IO ()
 modifyTrack libT track = do
-  time <- getCurrentTime
+  time <- Data.Time.getCurrentTime
   atomically $ do 
     lib <- readTVar libT
     let newTrack = updateTrack time track
@@ -69,13 +67,13 @@ playTrackSTM pause offset track = do
   p <- atomically $ readTVar pause
   if p == On then playTrackSTM pause offset track
   else do
-    print "Pause for track"
-    print p
+    -- print "Pause for track"
+    -- print p
     offsetStart <- atomically $ readTVar offset
-    print "Offset for track:"
-    print offsetStart
-    print track.path
-    timeStart <- getCurrentTime
+    -- print "Offset for track:"
+    -- print offsetStart
+    -- print track.path
+    timeStart <- Data.Time.getCurrentTime
     (_, _, _, ph) <-
       createProcess (proc "ffplay"
         [ "-nodisp"
@@ -88,15 +86,11 @@ playTrackSTM pause offset track = do
         , std_out = NoStream
         , std_err = NoStream
         }
-    -- let timeLeft = max 0 1
     let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
 
-    timeout <- race (threadDelay (timeLeft * 1000)) (pressPause pause)
+    timeout <- race (threadDelay (timeLeft * 1000)) (pressPauseNext pause)
     case timeout of
-      Left _ -> do 
-        terminateProcess ph
-        atomically $ writeTVar offset 0 
-      Right timePause -> do 
+      Right (Right timePause) -> do 
         terminateProcess ph
         let offset' = (offsetStart + deltaOffset timeStart timePause)
         if offset' >= fromIntegral track.duration then do
@@ -104,20 +98,31 @@ playTrackSTM pause offset track = do
         else do
           atomically $ writeTVar offset offset'
           playTrackSTM pause offset track
+      _ -> do 
+        terminateProcess ph
+        atomically $ writeTVar offset 0 
 
-deltaOffset :: UTCTime -> UTCTime -> Double
-deltaOffset start end = realToFrac $ diffUTCTime end start
+data Next
 
-pressPause :: TVar Pause -> IO (UTCTime)
-pressPause pause = do
-  atomically $ pressPause' pause
-  getCurrentTime
+deltaOffset :: Data.Time.UTCTime -> Data.Time.UTCTime -> Double
+deltaOffset start end = realToFrac $ Data.Time.diffUTCTime end start
 
-pressPause' :: TVar Pause -> STM ()
-pressPause' pause = do
+pressPauseNext :: TVar Pause -> IO (Either Next Data.Time.UTCTime)
+pressPauseNext pause = do
+  status <- atomically $ pressPauseOrNext pause
+  time <- Data.Time.getCurrentTime
+  case status of
+    Left _ -> do
+               atomically $ writeTVar pause Off  --чтобы после некст начинало играть без паузу 
+               pure $ Left $ error "press next" 
+    Right _ -> pure $ Right time
+
+pressPauseOrNext :: TVar Pause -> STM (Either Next Data.Time.UTCTime)
+pressPauseOrNext pause = do
   statusPause <- readTVar pause
   case statusPause of
-    On -> pure ()
+    On -> pure $ Right $ error "any value for UTCTime"
+    Next -> pure $ Left $ error "press Next"
     Off -> retry
 
 
@@ -129,7 +134,7 @@ initLibrary dir file = do
 
 parseTrack :: FilePath -> IO (Track)
 parseTrack file = do
-  time <- getCurrentTime
+  time <- Data.Time.getCurrentTime
   osPath <- encodeUtf file
   metadata <- parseMetadata osPath
   case metadata of

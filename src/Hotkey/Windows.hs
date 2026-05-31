@@ -1,6 +1,5 @@
-{-# LANGUAGE RecordWildCards #-}
 
-module Hotkey.Ubunta
+module Hotkey.Windows
    where
 import Control.Concurrent.STM ( atomically, writeTVar, TVar )
 import Control.Monad (forever, when)

@@ -4,14 +4,9 @@
 module Main (main) where
 
 
-import Graphics.X11.Xlib
-import Graphics.X11.Xlib.Extras
-import Graphics.X11.Types
-import Control.Monad (forever, when)
 import Control.Concurrent.STM
-import Control.Concurrent
 import Control.Concurrent.Async 
-import Hotkey.Ubunta
+import Hotkey.Ubunta (getKey)
 import Hotkey.Types
 
 import qualified Handlers.Engine
@@ -19,19 +14,6 @@ import Handlers.Logger (Log (..))
 import qualified Handlers.Logger
 import qualified Logger
 import qualified Engine
-
-
-main2 :: IO ()
-main2 = do
-  pause <- atomically $ newTVar Off
-  p <- atomically $ readTVar pause
-  print p
-  
-  withAsync(getKey pause) $ \_ -> do
-    print "I am here"
-    getLine >>= putStrLn
-    p <- atomically $ readTVar pause
-    print p
 
 
 main :: IO ()
@@ -62,7 +44,5 @@ main = do
           }
   withAsync(getKey pause) $ \_ -> do
     Handlers.Engine.ghettoBluster engine    
-    print "I am here"
+    putStrLn "Playlist end. Please type anything"
     getLine >>= putStrLn
-    p <- atomically $ readTVar pause
-    print p
