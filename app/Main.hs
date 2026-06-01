@@ -1,10 +1,8 @@
 module Main (main) where
 
-import Control.Concurrent.STM
-import Control.Concurrent.Async 
-import Hotkey.Types
-import System.Directory (getCurrentDirectory,)
-
+import Control.Concurrent.STM ( atomically, newTVar )
+import Control.Concurrent.Async ( withAsync ) 
+import Hotkey.Types ( Pause(Off) )
 import qualified Handlers.Engine
 import Handlers.Logger (Log (..))
 import qualified Handlers.Logger
@@ -16,7 +14,8 @@ main :: IO ()
 main = do
   pause <- atomically $ newTVar Off
   offset <- atomically $ newTVar 0 
-  dir <- getCurrentDirectory
+  let dir ="/home/m/share/sharedFolder/test"
+  -- dir <- getCurrentDirectory
   let
 #ifdef mingw32_HOST_OS
       file = dir <> "\\jukebox.json"

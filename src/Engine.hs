@@ -22,6 +22,7 @@ import Control.Concurrent ( threadDelay )
 import Control.Concurrent.Async ( race )
 import Control.Concurrent.STM
     ( atomically, newTVarIO, readTVar, retry, writeTVar, STM, TVar )
+import qualified Data.Text as T
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -54,7 +55,7 @@ playTrackSTM pause offset track = do
         , "-autoexit"
         , "-ss", show offsetStart 
         , "-loglevel", "quiet"
-        , track.path
+        , T.unpack track.path
         ])
         { std_in  = NoStream
         , std_out = NoStream
@@ -114,7 +115,7 @@ parseTrack file = do
   case metadata of
     Left _ -> error "parse error"
     Right md -> pure $ Track { 
-      path = file,
+      path = T.pack file,
       duration = fromIntegral $ fromMaybe 0 md.audioProperties.duration,
       interval = 0,
       count = 0,
@@ -149,7 +150,7 @@ loadFromDir dir = do
   -- 1. Обрабатываем MP3 файлы в текущей директории
   let mp3s = filter (\f -> takeExtension f `elem` [".mp3",".flac",".wav",".ogg"]) files
   tracks <- mapM parseTrack mp3s
-  let currentMap = Map.fromList (zip mp3s tracks)
+  let currentMap = Map.fromList (zip (map T.pack mp3s) tracks)
   
   -- 2. Рекурсивно заходим во все подпапки
   subMaps <- mapM loadFromDir subDirs

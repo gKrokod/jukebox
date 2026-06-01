@@ -6,14 +6,15 @@ import Data.List ( sortOn )
 import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
 import Data.Text as T (pack)
+import Data.Text (Text)
 import qualified Data.Map.Strict as Map
 
 ghettoBluster :: forall m. Monad m => Handle m -> m ()
 ghettoBluster h@Handle{..} = do
   playList <- sortedTracks <$> getPlayList h
-  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist size = " <> T.pack ( show $ length playList))
+  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Размер плейлиста = " <> T.pack ( show $ length playList))
   mapM_ (\x -> infoTrack x >> startPlay x) playList
-  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Playlist end")
+  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Плейлист прослушан")
     where startPlay :: Monad m => Track -> m ()
           startPlay t = do
             modifyTrack t
@@ -21,10 +22,17 @@ ghettoBluster h@Handle{..} = do
             saveDataBaseToFile 
           infoTrack :: Monad m => Track -> m ()
           infoTrack t = do
-            Handlers.Logger.logMessage logger Handlers.Logger.Debug "Играет трек"
-            Handlers.Logger.logMessage logger Handlers.Logger.Debug (T.pack $ show t)
+            Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Играет трек: " <> t.path)
+            Handlers.Logger.logMessage logger Handlers.Logger.Debug $ 
+              ("Длительность: " <> formatMMSS t.duration <> ", Интервал: " <> T.pack (show t.interval) <> ", Следует прослушать: " <> T.pack (show t.planPlay))
 
-type Library = Map.Map FilePath Track
+formatMMSS :: Word -> Text
+formatMMSS ms =
+  let (m,s) = ms `divMod` 60000
+  in T.pack $ mconcat[show m, ":",take 2 $ show s]
+
+type Library = Map.Map Text Track
+-- type Library = Map.Map FilePath Track
 
 newtype PlayList = SortedTracks { sortedTracks :: [Track]} -- SorteList
 
@@ -36,7 +44,7 @@ mapToPlayList = SortedTracks
 
 data Track = Track
   { 
-    path :: FilePath, -- unique
+    path :: Text, -- unique
     duration :: Word, -- ms
     interval :: Word, -- через сколько day ставить
     count :: Word, 
@@ -45,7 +53,7 @@ data Track = Track
   }  
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON)
-   
+
 data Handle m = Handle 
   { logger :: Handlers.Logger.Handle m,
     getLibrary :: m (Library),
