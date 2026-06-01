@@ -44,9 +44,15 @@ saveDataBaseToFile file libT = do
 
 playTrackSTM :: TVar Pause -> TVar Double -> Track -> IO ()
 playTrackSTM pause offset track = do
-  p <- atomically $ readTVar pause
-  if p == On then playTrackSTM pause offset track
-  else do
+    atomically $ do
+      p <- readTVar pause
+      case p of
+        On -> retry       -- ждать, пока TVar pause изменится
+        _  -> pure ()     -- Off или Next — можно продолжать
+  
+ -- p <- atomically $ readTVar pause
+ -- if p == On then playTrackSTM pause offset track
+ -- else do
     offsetStart <- atomically $ readTVar offset
     timeStart <- Data.Time.getCurrentTime
     (_, _, _, ph) <-
