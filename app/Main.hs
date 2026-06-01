@@ -10,9 +10,14 @@ import qualified Logger
 import qualified Engine
 import Hotkey.Grab (getKey)
 import System.Directory (getCurrentDirectory)
+import System.IO (hSetEncoding, stdout, stderr, utf8)
 
 main :: IO ()
 main = do
+-- on Windows type cmd /K "chcp 65001 & R:\_JUKEBOX\musicjukebox-exe.exe"
+  hSetEncoding stdout utf8
+  hSetEncoding stderr utf8
+
   pause <- atomically $ newTVar Off
   offset <- atomically $ newTVar 0 
 
