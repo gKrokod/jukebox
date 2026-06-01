@@ -7,7 +7,7 @@ import System.Process
       proc,
       CreateProcess(std_err, std_in, std_out),
       StdStream(NoStream) ) 
-import System.Directory (listDirectory, doesDirectoryExist)
+import System.Directory (listDirectory, doesDirectoryExist, doesFileExist)
 import System.FilePath ( (</>), takeExtension )
 import System.OsPath (encodeUtf)
 import Monatone.Common  (parseMetadata)
@@ -100,12 +100,11 @@ pressPauseOrNext pause = do
     Next -> pure $ Left $ error "press Next"
     Off -> retry
 
-
-
 initLibrary :: FilePath -> FilePath -> IO (TVar Library)
 initLibrary dir file = do
   library <- migration dir file
-  newTVarIO library
+  cleanUpLibrary <- Map.fromList <$> filterM (doesFileExist . T.unpack . fst) (Map.toList  library)
+  newTVarIO cleanUpLibrary
 
 parseTrack :: FilePath -> IO (Track)
 parseTrack file = do
