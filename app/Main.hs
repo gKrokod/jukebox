@@ -9,13 +9,14 @@ import qualified Handlers.Logger
 import qualified Logger
 import qualified Engine
 import Hotkey.Grab (getKey)
+import System.Directory (getCurrentDirectory)
 
 main :: IO ()
 main = do
   pause <- atomically $ newTVar Off
   offset <- atomically $ newTVar 0 
-  let dir ="/home/m/share/sharedFolder/test"
-  -- dir <- getCurrentDirectory
+
+  dir <- getCurrentDirectory
   let
 #ifdef mingw32_HOST_OS
       file = dir <> "\\jukebox.json"
