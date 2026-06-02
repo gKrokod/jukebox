@@ -1,6 +1,7 @@
 module Engine where
 import Hotkey.Types ( Pause(..) )
 import Control.Exception (SomeException, displayException, throwIO, try)
+import Data.Time ( UTCTime, addUTCTime )
 import Handlers.Engine (Track(..), Library, updateTrack)
 import System.Process
     ( createProcess, terminateProcess,
@@ -16,7 +17,7 @@ import qualified Data.ByteString.Lazy as BL
 import Data.Aeson (encode, eitherDecode)
 import Data.Maybe ( fromMaybe )
 import qualified Data.Map.Strict as Map
-import Data.Time ( UTCTime, diffUTCTime, getCurrentTime ) 
+import Data.Time ( diffUTCTime, getCurrentTime ) 
 import Control.Monad (filterM)
 import Control.Concurrent ( threadDelay )
 import Control.Concurrent.Async ( race )
@@ -125,7 +126,7 @@ parseTrack file = do
       interval = 0,
       count = 0,
       lastPlay = Nothing,
-      planPlay = Just time
+      planPlay = Just $ addUTCTime 86400 time -- tomorrow for new track
                           } 
 
 -- bank = "/home/m/share/sharedFolder/test"
