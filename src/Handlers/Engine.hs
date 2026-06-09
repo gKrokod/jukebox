@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module Handlers.Engine (Library, ghettoBluster, Track(..), Handle(..), updateTrack) where
+module Handlers.Engine (Library, ghettoBluster, Track(..), Handle(..), updateTrack, formatMMSS) where
 import qualified Handlers.Logger
 import Data.Time ( UTCTime, addUTCTime )
 import Data.List ( sortOn )

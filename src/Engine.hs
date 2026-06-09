@@ -1,12 +1,9 @@
 module Engine where
 import Hotkey.Types ( Pause(..) )
 import Data.Time ( UTCTime)
-import Handlers.Engine (Track(..), Library, updateTrack)
-import System.Process
-    ( createProcess, terminateProcess,
-      proc,
-      CreateProcess(std_err, std_in, std_out),
-      StdStream(NoStream) ) 
+import Handlers.Engine (Track(..), Library, updateTrack, formatMMSS)
+import System.Process ( createProcess, terminateProcess, proc,
+      CreateProcess(std_err, std_in, std_out), StdStream(NoStream) ) 
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson (encode)
 import qualified Data.Map.Strict as Map
@@ -16,6 +13,7 @@ import Control.Concurrent.Async ( race )
 import Control.Concurrent.STM
     ( atomically, readTVar, retry, writeTVar, STM, TVar )
 import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -48,7 +46,8 @@ playTrackSTM pause offset track = do
  -- else do
     offsetStart <- atomically $ readTVar offset
     timeStart <- Data.Time.getCurrentTime
-    putStrLn $ "Debug Duration: " <> show track.duration
+    TIO.putStrLn $ "Debug Duration: " <> formatMMSS track.duration
+              -- ("Длительность: " <> formatMMSS t.duration <> ", Интервал: " <> T.pack (show t.interval) <> ", Следует прослушать: " <> T.pack (show t.planPlay))
     putStrLn $ "Debug Offset: " <> show offsetStart
     putStrLn $ "Debug TimeStart: " <> show timeStart
     (_, _, _, ph) <-

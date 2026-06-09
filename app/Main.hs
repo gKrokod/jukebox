@@ -22,13 +22,14 @@ main = do
   offset <- atomically $ newTVar 0 
 
   -- dir <- getCurrentDirectory
+
 #ifdef mingw32_HOST_OS
   let dir ="C:\\sharedFolder\\test" -- windows
       -- file = dir <> "\\jukebox.json"
 #else
-  let dir ="/home/m/share/sharedFolder/test"
-      -- file = dir <> "/jukebox.json"
+  let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
 #endif
+
   let
 #ifdef mingw32_HOST_OS
       file = dir <> "\\jukebox.json"
