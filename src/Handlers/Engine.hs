@@ -12,9 +12,9 @@ import qualified Data.Map.Strict as Map
 ghettoBluster :: forall m. Monad m => Handle m -> m ()
 ghettoBluster h@Handle{..} = do
   playList <- sortedTracks <$> getPlayList h
-  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Размер плейлиста = " <> T.pack ( show $ length playList))
+  Handlers.Logger.logMessage logger Handlers.Logger.Info ("Размер плейлиста = " <> T.pack ( show $ length playList))
   mapM_ (\x -> infoTrack x >> startPlay x) playList
-  Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Плейлист прослушан")
+  Handlers.Logger.logMessage logger Handlers.Logger.Info ("Плейлист прослушан")
     where startPlay :: Monad m => Track -> m ()
           startPlay t = do
             modifyTrack t
@@ -22,8 +22,8 @@ ghettoBluster h@Handle{..} = do
             saveDataBaseToFile 
           infoTrack :: Monad m => Track -> m ()
           infoTrack t = do
-            Handlers.Logger.logMessage logger Handlers.Logger.Debug ("Играет трек: " <> t.path)
-            Handlers.Logger.logMessage logger Handlers.Logger.Debug $ 
+            Handlers.Logger.logMessage logger Handlers.Logger.Info ("Играет трек: " <> t.path)
+            Handlers.Logger.logMessage logger Handlers.Logger.Info $ 
               ("Длительность: " <> formatMMSS t.duration <> ", Интервал: " <> T.pack (show t.interval) <> ", Следует прослушать: " <> T.pack (show t.planPlay))
 
 formatMMSS :: Word -> Text

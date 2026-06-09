@@ -41,6 +41,7 @@ library
       Hotkey.Types
       Hotkey.Grab
       Engine
+      DataBase
       Logger
     build-depends: 
       aeson

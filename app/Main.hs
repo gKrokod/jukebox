@@ -8,8 +8,8 @@ import Handlers.Logger (Log (..))
 import qualified Handlers.Logger
 import qualified Logger
 import qualified Engine
+import qualified DataBase
 import Hotkey.Grab (getKey)
-import System.Directory (getCurrentDirectory)
 import System.IO (hSetEncoding, stdout, stderr, utf8)
 
 main :: IO ()
@@ -21,24 +21,24 @@ main = do
   pause <- atomically $ newTVar Off
   offset <- atomically $ newTVar 0 
 
-  dir <- getCurrentDirectory
+  -- dir <- getCurrentDirectory
+#ifdef mingw32_HOST_OS
+  let dir ="C:\\sharedFolder\\test" -- windows
+      -- file = dir <> "\\jukebox.json"
+#else
+  let dir ="/home/m/share/sharedFolder/test"
+      -- file = dir <> "/jukebox.json"
+#endif
   let
 #ifdef mingw32_HOST_OS
       file = dir <> "\\jukebox.json"
 #else
       file = dir <> "/jukebox.json"
 #endif
--- #ifdef mingw32_HOST_OS
---   let dir ="C:\\sharedFolder\\test" -- windows
---       file = dir <> "\\jukebox.json"
--- #else
---   let dir ="/home/m/share/sharedFolder/test"
---       file = dir <> "/jukebox.json"
--- #endif
-  tvar <- Engine.initLibrary dir file
+  tvar <- DataBase.initLibrary dir file
   let logHandle =
         Handlers.Logger.Handle
-          { Handlers.Logger.levelLogger = Debug,
+          { Handlers.Logger.levelLogger = Info,
             Handlers.Logger.writeLog = Logger.writeLog
           }
       engine =
