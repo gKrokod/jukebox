@@ -16,7 +16,6 @@ import Control.Concurrent.Async ( race )
 import Control.Concurrent.STM
     ( atomically, readTVar, retry, writeTVar, STM, TVar )
 import qualified Data.Text as T
--- import DataBase
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -49,6 +48,9 @@ playTrackSTM pause offset track = do
  -- else do
     offsetStart <- atomically $ readTVar offset
     timeStart <- Data.Time.getCurrentTime
+    putStrLn $ "Debug Duration: " <> show track.duration
+    putStrLn $ "Debug Offset: " <> show offsetStart
+    putStrLn $ "Debug TimeStart: " <> show timeStart
     (_, _, _, ph) <-
       createProcess (proc "ffplay"
         [ "-nodisp"
