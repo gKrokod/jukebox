@@ -41,6 +41,7 @@ library
       Hotkey.Types
       Hotkey.Grab
       PlayerState
+      Player.Shutdown
       Engine
       DataBase
       Logger
