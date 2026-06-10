@@ -1,6 +1,7 @@
 module Main (main) where
 
-import Control.Concurrent.STM ( atomically, newTVar )
+import Control.Concurrent.STM ( atomically, newTVar , readTVar)
+import System.Process (terminateProcess)
 import Control.Concurrent.Async ( withAsync ) 
 import Hotkey.Types ( Pause(Off) )
 import qualified Handlers.Engine
@@ -9,8 +10,11 @@ import qualified Handlers.Logger
 import qualified Logger
 import qualified Engine
 import qualified DataBase
+import PlayerState
 import Hotkey.Grab (getKey)
 import System.IO (hSetEncoding, stdout, stderr, utf8)
+import Control.Exception
+import System.Directory (getCurrentDirectory)
 
 main :: IO ()
 main = do
@@ -18,17 +22,19 @@ main = do
   hSetEncoding stdout utf8
   hSetEncoding stderr utf8
 
-  pause <- atomically $ newTVar Off
-  offset <- atomically $ newTVar 0 
+  (pause, offset, ph) <- atomically $ 
+    (,,) <$> newTVar Off
+         <*> newTVar 0
+         <*> newTVar Nothing
 
-  -- dir <- getCurrentDirectory
+  dir <- getCurrentDirectory
 
-#ifdef mingw32_HOST_OS
-  let dir ="C:\\sharedFolder\\test" -- windows
-      -- file = dir <> "\\jukebox.json"
-#else
-  let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
-#endif
+-- #ifdef mingw32_HOST_OS
+--   let dir ="C:\\sharedFolder\\test" -- windows
+--       -- file = dir <> "\\jukebox.json"
+-- #else
+--   let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
+-- #endif
 
   let
 #ifdef mingw32_HOST_OS
@@ -48,9 +54,13 @@ main = do
             Handlers.Engine.getLibrary = Engine.getLibrary tvar,
             Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
             Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
-            Handlers.Engine.playTrack = Engine.playTrackSTM pause offset
+            Handlers.Engine.playTrack = Engine.playTrackSTM pause (FFPlay offset ph)
           }
   withAsync(getKey pause) $ \_ -> do
-    Handlers.Engine.ghettoBluster engine    
-    putStrLn "Playlist end. Please type anything"
+    Handlers.Engine.ghettoBluster engine 
+     `finally` (do 
+       ph' <- atomically $ readTVar ph   
+       maybe (putStrLn "No ffplay process") (terminateProcess) ph'
+      )
+    putStrLn "mb Playlist end. Please type anything"
     getLine >>= putStrLn

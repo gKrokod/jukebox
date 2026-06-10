@@ -26,6 +26,6 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 quickfix
-*/quickfix
+**/quickfix
 .swp
 *.swp

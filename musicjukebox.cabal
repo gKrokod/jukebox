@@ -40,6 +40,7 @@ library
       Handlers.Logger
       Hotkey.Types
       Hotkey.Grab
+      PlayerState
       Engine
       DataBase
       Logger

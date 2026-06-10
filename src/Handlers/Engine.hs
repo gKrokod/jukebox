@@ -9,6 +9,9 @@ import Data.Text as T (pack)
 import Data.Text (Text)
 import qualified Data.Map.Strict as Map
 
+
+
+
 ghettoBluster :: forall m. Monad m => Handle m -> m ()
 ghettoBluster h@Handle{..} = do
   playList <- sortedTracks <$> getPlayList h

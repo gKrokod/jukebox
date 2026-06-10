@@ -14,6 +14,7 @@ import Control.Concurrent.STM
     ( atomically, readTVar, retry, writeTVar, STM, TVar )
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
+import PlayerState
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -33,8 +34,8 @@ saveDataBaseToFile file libT = do
   lib <- atomically (readTVar libT)
   BL.writeFile file (encode lib)
 
-playTrackSTM :: TVar Pause -> TVar Double -> Track -> IO ()
-playTrackSTM pause offset track = do
+playTrackSTM :: TVar Pause -> FFPlay -> Track -> IO ()
+playTrackSTM pause state track = do
     atomically $ do
       p <- readTVar pause
       case p of
@@ -42,9 +43,9 @@ playTrackSTM pause offset track = do
         _  -> pure ()     -- Off или Next — можно продолжать
   
  -- p <- atomically $ readTVar pause
- -- if p == On then playTrackSTM pause offset track
+ -- if p == On then playTrackSTM pause state track
  -- else do
-    offsetStart <- atomically $ readTVar offset
+    offsetStart <- atomically $ readTVar state.offset
     timeStart <- Data.Time.getCurrentTime
     TIO.putStrLn $ "Debug Duration: " <> formatMMSS track.duration
               -- ("Длительность: " <> formatMMSS t.duration <> ", Интервал: " <> T.pack (show t.interval) <> ", Следует прослушать: " <> T.pack (show t.planPlay))
@@ -62,6 +63,7 @@ playTrackSTM pause offset track = do
         , std_out = NoStream
         , std_err = NoStream
         }
+    atomically $ writeTVar state.ph (Just ph)
     let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
 
     timeout <- race (threadDelay (timeLeft * 1000)) (pressPauseNext pause)
@@ -70,13 +72,13 @@ playTrackSTM pause offset track = do
         terminateProcess ph
         let offset' = (offsetStart + deltaOffset timeStart timePause)
         if offset' >= fromIntegral track.duration then do
-          atomically $ writeTVar offset 0
+          atomically $ writeTVar state.offset 0
         else do
-          atomically $ writeTVar offset offset'
-          playTrackSTM pause offset track
+          atomically $ writeTVar state.offset offset'
+          playTrackSTM pause state track
       _ -> do 
         terminateProcess ph
-        atomically $ writeTVar offset 0 
+        atomically $ writeTVar state.offset 0 
 
 data Next
 
