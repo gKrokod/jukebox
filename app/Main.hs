@@ -61,6 +61,7 @@ main = do
      `finally` (do 
        ph' <- atomically $ readTVar ph   
        maybe (putStrLn "No ffplay process") (terminateProcess) ph'
+       Engine.saveDataBaseToFile file tvar
       )
     putStrLn "mb Playlist end. Please type anything"
     getLine >>= putStrLn
