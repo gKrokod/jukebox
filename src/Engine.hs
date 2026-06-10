@@ -2,8 +2,10 @@ module Engine where
 import Hotkey.Types ( Pause(..) )
 import Data.Time ( UTCTime)
 import Handlers.Engine (Track(..), Library, updateTrack, formatMMSS)
-import System.Process ( createProcess, terminateProcess, proc,
-      CreateProcess(std_err, std_in, std_out), StdStream(NoStream) ) 
+import System.Process ( createProcess, proc, ProcessHandle,
+      CreateProcess(std_err, std_in, std_out), StdStream(NoStream) )
+import Control.Exception ( bracket )
+import Player.Shutdown ( killCurrentFFPlay )
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson (encode)
 import qualified Data.Map.Strict as Map
@@ -51,34 +53,46 @@ playTrackSTM pause state track = do
               -- ("Длительность: " <> formatMMSS t.duration <> ", Интервал: " <> T.pack (show t.interval) <> ", Следует прослушать: " <> T.pack (show t.planPlay))
     putStrLn $ "Debug Offset: " <> show offsetStart
     putStrLn $ "Debug TimeStart: " <> show timeStart
-    (_, _, _, ph) <-
-      createProcess (proc "ffplay"
-        [ "-nodisp"
-        , "-autoexit"
-        , "-ss", show offsetStart 
-        , "-loglevel", "quiet"
-        , T.unpack track.path
-        ])
-        { std_in  = NoStream
-        , std_out = NoStream
-        , std_err = NoStream
-        }
-    atomically $ writeTVar state.ph (Just ph)
     let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
 
-    timeout <- race (threadDelay (timeLeft * 1000)) (pressPauseNext pause)
+    -- The child process is owned by this bracket: it is spawned in the
+    -- acquire step and unconditionally reaped in the release step, so any
+    -- async exception (Ctrl+C / ThreadKilled / the Windows console-close
+    -- handler killing us) tears ffplay down deterministically instead of
+    -- orphaning it. The shared TVar is kept in sync so an external handler
+    -- can also find and kill the current process.
+    timeout <- bracket (spawnFFPlay state offsetStart track)
+                       (\_ -> killCurrentFFPlay state)
+                       (\_ -> race (threadDelay (timeLeft * 1000)) (pressPauseNext pause))
     case timeout of
-      Right (Right timePause) -> do 
-        terminateProcess ph
+      Right (Right timePause) -> do
         let offset' = (offsetStart + deltaOffset timeStart timePause)
         if offset' >= fromIntegral track.duration then do
           atomically $ writeTVar state.offset 0
         else do
           atomically $ writeTVar state.offset offset'
           playTrackSTM pause state track
-      _ -> do 
-        terminateProcess ph
-        atomically $ writeTVar state.offset 0 
+      _ ->
+        atomically $ writeTVar state.offset 0
+
+-- | Spawn an ffplay child for the given track/offset and publish its handle
+-- into the shared state so an out-of-band shutdown handler can reach it.
+spawnFFPlay :: FFPlay -> Double -> Track -> IO ProcessHandle
+spawnFFPlay state offsetStart track = do
+  (_, _, _, ph) <-
+    createProcess (proc "ffplay"
+      [ "-nodisp"
+      , "-autoexit"
+      , "-ss", show offsetStart
+      , "-loglevel", "quiet"
+      , T.unpack track.path
+      ])
+      { std_in  = NoStream
+      , std_out = NoStream
+      , std_err = NoStream
+      }
+  atomically $ writeTVar state.ph (Just ph)
+  pure ph
 
 data Next
 

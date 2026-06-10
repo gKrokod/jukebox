@@ -1,8 +1,7 @@
 module Main (main) where
 
-import Control.Concurrent.STM ( atomically, newTVar , readTVar)
-import System.Process (terminateProcess)
-import Control.Concurrent.Async ( withAsync ) 
+import Control.Concurrent.STM ( atomically, newTVar )
+import Control.Concurrent.Async ( withAsync )
 import Hotkey.Types ( Pause(Off) )
 import qualified Handlers.Engine
 import Handlers.Logger (Log (..))
@@ -11,6 +10,7 @@ import qualified Logger
 import qualified Engine
 import qualified DataBase
 import PlayerState
+import Player.Shutdown (killCurrentFFPlay, withShutdownHandler)
 import Hotkey.Grab (getKey)
 import System.IO (hSetEncoding, stdout, stderr, utf8)
 import Control.Exception
@@ -43,7 +43,8 @@ main = do
       file = dir <> "/jukebox.json"
 #endif
   tvar <- DataBase.initLibrary dir file
-  let logHandle =
+  let ffplay = FFPlay offset ph
+      logHandle =
         Handlers.Logger.Handle
           { Handlers.Logger.levelLogger = Info,
             Handlers.Logger.writeLog = Logger.writeLog
@@ -54,15 +55,18 @@ main = do
             Handlers.Engine.getLibrary = Engine.getLibrary tvar,
             Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
             Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
-            Handlers.Engine.playTrack = Engine.playTrackSTM pause (FFPlay offset ph)
+            Handlers.Engine.playTrack = Engine.playTrackSTM pause ffplay
           }
-  withAsync(getKey pause) $ \_ -> do
-    Handlers.Engine.ghettoBluster engine 
-     `finally` (do 
-       ph' <- atomically $ readTVar ph   
---todo, move terminate to bracket around playTrackSTM. replace finally on onEception and stay saveDB
-       maybe (putStrLn "No ffplay process") (terminateProcess) ph'
-       Engine.saveDataBaseToFile file tvar
-      )
-    putStrLn "mb Playlist end. Please type anything"
-    getLine >>= putStrLn
+  withShutdownHandler ffplay $
+    withAsync (getKey pause) $ \_ -> do
+      Handlers.Engine.ghettoBluster engine
+        `finally` (do
+          -- Per-track playback already reaps ffplay via bracket; this is a
+          -- final safety net for any handle still live at teardown, plus the
+          -- database flush. On Windows console-close the native handler in
+          -- withShutdownHandler does the reaping before the OS kills us.
+          killCurrentFFPlay ffplay
+          Engine.saveDataBaseToFile file tvar
+        )
+      putStrLn "mb Playlist end. Please type anything"
+      getLine >>= putStrLn
