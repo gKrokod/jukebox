@@ -60,6 +60,7 @@ main = do
     Handlers.Engine.ghettoBluster engine 
      `finally` (do 
        ph' <- atomically $ readTVar ph   
+--todo, move terminate to bracket around playTrackSTM. replace finally on onEception and stay saveDB
        maybe (putStrLn "No ffplay process") (terminateProcess) ph'
        Engine.saveDataBaseToFile file tvar
       )
