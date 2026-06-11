@@ -5,6 +5,10 @@ import System.Win32.Console
 import System.Win32.Console.CtrlHandler 
 import System.Process ( createProcess, terminateProcess, proc,waitForProcess, ProcessHandle,
       CreateProcess(std_err, std_in, std_out), StdStream(NoStream) ) 
+import Control.Concurrent.STM (atomically, readTVar, writeTVar)
+import Control.Exception (mask_)
+import Control.Monad (void)
+import System.Process (ProcessHandle, terminateProcess, waitForProcess)
 
 shutdownProcess :: FFPlay -> IO ()
 shutdownProcess state = mask_ $ do
