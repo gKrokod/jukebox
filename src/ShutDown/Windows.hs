@@ -19,7 +19,7 @@ shutdownProcess state = mask_ $ do
       terminateProcess ph
       void (waitForProcess ph)
 
-consoleHandler :: FFplay -> IO a -> IO a
+consoleHandler :: FFPlay -> IO a -> IO a
 consoleHandler ffplay = 
   withConsoleCtrlHandler handler 
   where
