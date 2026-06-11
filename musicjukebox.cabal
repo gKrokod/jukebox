@@ -40,6 +40,7 @@ library
       Handlers.Logger
       Hotkey.Types
       Hotkey.Grab
+      ShutDown.ConsoleHandler
       PlayerState
       Engine
       DataBase
@@ -62,11 +63,13 @@ library
  if os(windows)
     other-modules:
         Hotkey.Windows
+        ShutDown.Windows
     build-depends:
         Win32
  else
     other-modules:
         Hotkey.Ubuntu
+        ShutDown.Ubuntu
     build-depends:
         X11
 

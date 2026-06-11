@@ -2,7 +2,7 @@ module Engine where
 import Hotkey.Types ( Pause(..) )
 import Data.Time ( UTCTime)
 import Handlers.Engine (Track(..), Library, updateTrack, formatMMSS)
-import System.Process ( createProcess, terminateProcess, proc,
+import System.Process ( createProcess, terminateProcess, proc,waitForProcess,
       CreateProcess(std_err, std_in, std_out), StdStream(NoStream) ) 
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson (encode)
@@ -17,6 +17,7 @@ import qualified Data.Text.IO as TIO
 import PlayerState
 import System.Process
 import Control.Exception (bracket)
+import Control.Monad
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -57,6 +58,7 @@ releaseFFplay :: FFPlay -> ProcessHandle -> IO ()
 releaseFFplay state ph = do
   terminateProcess ph
   atomically $ writeTVar state.ph Nothing
+  void $ waitForProcess ph
   
 
 data PlayStatus = PlayDone | PlayPause
