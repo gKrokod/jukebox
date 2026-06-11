@@ -1,5 +1,5 @@
 module ShutDown.Windows (consoleHandler) where
-import PlayerState (FFPlay)
+import PlayerState (FFPlay(..))
 import System.Win32.Types
 import System.Win32.Console
 import System.Win32.Console.CtrlHandler 
@@ -9,6 +9,10 @@ import Control.Concurrent.STM (atomically, readTVar, writeTVar)
 import Control.Exception (mask_)
 import Control.Monad (void)
 import System.Process (ProcessHandle, terminateProcess, waitForProcess)
+
+-- data FFPlay = FFPlay {
+--   offset :: TVar Double,
+--   ph :: TVar (Maybe ProcessHandle) }
 
 shutdownProcess :: FFPlay -> IO ()
 shutdownProcess state = mask_ $ do
