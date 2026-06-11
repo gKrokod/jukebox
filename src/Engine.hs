@@ -83,9 +83,8 @@ useFFplay pause state track ph = do
       atomically $ writeTVar state.offset 0
       pure PlayDone
       
-
-playTrackSTMbracket :: TVar Pause -> FFPlay -> Track -> IO ()
-playTrackSTMbracket pause state track = do
+playTrackSTM :: TVar Pause -> FFPlay -> Track -> IO ()
+playTrackSTM pause state track = do
     atomically $ do
       p <- readTVar pause
       case p of
@@ -102,7 +101,7 @@ playTrackSTMbracket pause state track = do
                     (useFFplay pause state track)
     case playStatus of
       PlayDone -> pure ()
-      PlayPause -> playTrackSTMbracket pause state track
+      PlayPause -> playTrackSTM pause state track
 
 
 data Next

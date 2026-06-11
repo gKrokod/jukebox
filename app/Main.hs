@@ -53,16 +53,11 @@ main = do
             Handlers.Engine.getLibrary = Engine.getLibrary tvar,
             Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
             Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
-            Handlers.Engine.playTrack = Engine.playTrackSTMbracket pause (FFPlay offset ph)
-            -- Handlers.Engine.playTrack = Engine.playTrackSTM pause (FFPlay offset ph)
+            Handlers.Engine.playTrack = Engine.playTrackSTM pause (FFPlay offset ph)
           }
   withAsync(getKey pause) $ \_ -> do
     Handlers.Engine.ghettoBluster engine 
-     `finally` (do 
-       ph' <- atomically $ readTVar ph   
---todo, move terminate to bracket around playTrackSTM. replace finally on onEception and stay saveDB
-       maybe (putStrLn "No ffplay process") (terminateProcess) ph'
-       Engine.saveDataBaseToFile file tvar
-      )
-    putStrLn "mb Playlist end. Please type anything"
+     `onException` Engine.saveDataBaseToFile file tvar
+      
+    putStrLn "Playlist end. Please type anything"
     getLine >>= putStrLn

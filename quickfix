@@ -1,3 +1,8 @@
+/home/m/projects/jukebox/app/Main.hs:3:55: warning: [GHC-38856] [-Wunused-imports]
+    The import of ‘readTVar’
+    from module ‘Control.Concurrent.STM’ is redundant
+/home/m/projects/jukebox/app/Main.hs:4:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.Process’ is redundant
 /home/m/projects/jukebox/app/Main.hs:17:1: warning: [GHC-66111] [-Wunused-imports]
     The import of ‘System.Directory’ is redundant
 /home/m/projects/jukebox/src/Engine.hs:4:58: warning: [GHC-38856] [-Wunused-imports]
