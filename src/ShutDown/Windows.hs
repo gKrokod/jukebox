@@ -1,7 +1,8 @@
 module ShutDown.Windows (consoleHandler) where
+import PlayerState (FFPlay)
 import System.Win32.Types
 import System.Win32.Console
-import System.Win32.Console.CtrlHandler (withConsoleCtrlHandler)
+import System.Win32.Console.CtrlHandler 
 import System.Process ( createProcess, terminateProcess, proc,waitForProcess,
       CreateProcess(std_err, std_in, std_out), StdStream(NoStream) ) 
 
