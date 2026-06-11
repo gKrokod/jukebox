@@ -1,4 +1,4 @@
-module ShotDown.Windows (consoleHandler) where
+module ShutDown.Windows (consoleHandler) where
 import System.Win32.Types
 import System.Win32.Console
 import System.Win32.Console.CtrlHandler (withConsoleCtrlHandler)
