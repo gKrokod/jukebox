@@ -27,9 +27,9 @@ main = do
          <*> newTVar 0
          <*> newTVar Nothing
 
+  -- dir <- getCurrentDirectory
 #ifdef mingw32_HOST_OS
-  dir <- getCurrentDirectory
-  -- let dir ="C:\\sharedFolder\\test" -- windows
+  let dir ="R:\\_JUKEBOX" -- windows for test
       -- file = dir <> "\\jukebox.json"
 #else
   let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"

@@ -60,12 +60,12 @@ getKey pause = do
 
             when (ctrlPressed && keycode == f7Code) $ do
                 atomically $ writeTVar pause On
-                putStrLn "Нажата Ctrl+F7 (перехвачено глобально)"
+                -- putStrLn "Нажата Ctrl+F7 (перехвачено глобально)"
 
             when (ctrlPressed && keycode == f8Code) $ do
                 atomically $ writeTVar pause Off
-                putStrLn "Нажата Ctrl+F8 (перехвачено глобально)"
+                -- putStrLn "Нажата Ctrl+F8 (перехвачено глобально)"
 
             when (ctrlPressed && keycode == f9Code) $ do
                 atomically $ writeTVar pause Next
-                putStrLn "Нажата Ctrl+F9 (перехвачено глобально)"
+                -- putStrLn "Нажата Ctrl+F9 (перехвачено глобально)"

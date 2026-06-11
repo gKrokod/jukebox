@@ -36,12 +36,9 @@ saveDataBaseToFile file libT = do
   lib <- atomically (readTVar libT)
   BL.writeFile file (encode lib)
 
--- type OffsetStart = Double
-acquireFFplay :: String -> FilePath -> IO (ProcessHandle)
-acquireFFplay offset path = do
-    print "acqure"
-    print offset
-    print path
+newtype OffsetStart = OffsetStart String
+acquireFFplay :: OffsetStart -> FilePath -> IO (ProcessHandle)
+acquireFFplay (OffsetStart offset) path = do
     (_, _, _, ph) <-
       createProcess (proc "ffplay"
         [ "-nodisp"
@@ -58,7 +55,6 @@ acquireFFplay offset path = do
 
 releaseFFplay :: ProcessHandle -> IO ()
 releaseFFplay ph = do
-  print "terminate here"
   terminateProcess ph
   
 
@@ -67,13 +63,15 @@ data PlayStatus = PlayDone | PlayPause
 
 useFFplay :: TVar Pause -> FFPlay -> Track -> ProcessHandle -> IO (PlayStatus)
 useFFplay pause state track ph = do
-  atomically $ writeTVar state.ph (Just ph)
-  offsetStart <- atomically $ readTVar state.offset
-  print "useFFplay"
-  timeStart <- Data.Time.getCurrentTime
+  offsetStart <- atomically $ do
+    writeTVar state.ph (Just ph) -- ph from acuireFFplay
+    readTVar state.offset
 
+  timeStart <- Data.Time.getCurrentTime
   let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
+
   timeout <- race (threadDelay (timeLeft * 1000)) (pressPauseNext pause)
+
   case timeout of
     Right (Right timePause) -> do 
       let offset' = (offsetStart + deltaOffset timeStart timePause)
@@ -81,7 +79,6 @@ useFFplay pause state track ph = do
       else do
         atomically $ writeTVar state.offset offset'
         pure PlayPause
-        -- playTrackSTMbracket pause state track
     _ -> do 
       atomically $ writeTVar state.offset 0
       pure PlayDone
@@ -100,59 +97,13 @@ playTrackSTMbracket pause state track = do
     putStrLn $ "Debug Offset: " <> show offsetStart
     putStrLn $ "Debug TimeStart: " <> show timeStart
     playStatus <- bracket
-                    (acquireFFplay (show offsetStart) (T.unpack track.path))
+                    (acquireFFplay (OffsetStart . show $ offsetStart) (T.unpack track.path))
                     releaseFFplay 
                     (useFFplay pause state track)
     case playStatus of
       PlayDone -> pure ()
       PlayPause -> playTrackSTMbracket pause state track
--- acquireFFplay :: OffsetStart -> FilePath -> IO (ProcessHandle)
 
-playTrackSTM :: TVar Pause -> FFPlay -> Track -> IO ()
-playTrackSTM pause state track = do
-    atomically $ do
-      p <- readTVar pause
-      case p of
-        On -> retry       -- ждать, пока TVar pause изменится
-        _  -> pure ()     -- Off или Next — можно продолжать
-  
- -- p <- atomically $ readTVar pause
- -- if p == On then playTrackSTM pause state track
- -- else do
-    offsetStart <- atomically $ readTVar state.offset
-    timeStart <- Data.Time.getCurrentTime
-    TIO.putStrLn $ "Debug Duration: " <> formatMMSS track.duration
-              -- ("Длительность: " <> formatMMSS t.duration <> ", Интервал: " <> T.pack (show t.interval) <> ", Следует прослушать: " <> T.pack (show t.planPlay))
-    putStrLn $ "Debug Offset: " <> show offsetStart
-    putStrLn $ "Debug TimeStart: " <> show timeStart
-    (_, _, _, ph) <-
-      createProcess (proc "ffplay"
-        [ "-nodisp"
-        , "-autoexit"
-        , "-ss", show offsetStart 
-        , "-loglevel", "quiet"
-        , T.unpack track.path
-        ])
-        { std_in  = NoStream
-        , std_out = NoStream
-        , std_err = NoStream
-        }
-    atomically $ writeTVar state.ph (Just ph)
-    let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
-
-    timeout <- race (threadDelay (timeLeft * 1000)) (pressPauseNext pause)
-    case timeout of
-      Right (Right timePause) -> do 
-        terminateProcess ph
-        let offset' = (offsetStart + deltaOffset timeStart timePause)
-        if offset' >= fromIntegral track.duration then do
-          atomically $ writeTVar state.offset 0
-        else do
-          atomically $ writeTVar state.offset offset'
-          playTrackSTM pause state track
-      _ -> do 
-        terminateProcess ph
-        atomically $ writeTVar state.offset 0 
 
 data Next
 
