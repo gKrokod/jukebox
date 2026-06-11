@@ -15,6 +15,7 @@ import Hotkey.Grab (getKey)
 import System.IO (hSetEncoding, stdout, stderr, utf8)
 import Control.Exception
 import System.Directory (getCurrentDirectory)
+import ShutDown.ConsoleHandler (consoleHandler)
 
 main :: IO ()
 main = do
@@ -22,19 +23,19 @@ main = do
   hSetEncoding stdout utf8
   hSetEncoding stderr utf8
 
-  (pause, offset, ph) <- atomically $ 
-    (,,) <$> newTVar Off
-         <*> newTVar 0
-         <*> newTVar Nothing
+  (pause, ffplay) <- atomically $ 
+    (,) <$> newTVar Off 
+        <*>
+    (FFPlay <$> newTVar 0
+            <*> newTVar Nothing)
 
-  dir <- getCurrentDirectory
-
--- #ifdef mingw32_HOST_OS
---   let dir ="C:\\sharedFolder\\test" -- windows
---       -- file = dir <> "\\jukebox.json"
--- #else
---   let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
--- #endif
+  -- dir <- getCurrentDirectory
+#ifdef mingw32_HOST_OS
+  let dir ="R:\\_JUKEBOX" -- windows for test
+      -- file = dir <> "\\jukebox.json"
+#else
+  let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
+#endif
 
   let
 #ifdef mingw32_HOST_OS
@@ -54,15 +55,11 @@ main = do
             Handlers.Engine.getLibrary = Engine.getLibrary tvar,
             Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
             Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
-            Handlers.Engine.playTrack = Engine.playTrackSTM pause (FFPlay offset ph)
+            Handlers.Engine.playTrack = Engine.playTrackSTM pause ffplay 
           }
-  withAsync(getKey pause) $ \_ -> do
-    Handlers.Engine.ghettoBluster engine 
-     `finally` (do 
-       ph' <- atomically $ readTVar ph   
---todo, move terminate to bracket around playTrackSTM. replace finally on onEception and stay saveDB
-       maybe (putStrLn "No ffplay process") (terminateProcess) ph'
-       Engine.saveDataBaseToFile file tvar
-      )
-    putStrLn "mb Playlist end. Please type anything"
-    getLine >>= putStrLn
+  consoleHandler ffplay $ -- for catch windows's exception 
+    withAsync(getKey pause) $ \_ -> do
+      Handlers.Engine.ghettoBluster engine 
+       `onException` Engine.saveDataBaseToFile file tvar
+      putStrLn "Playlist end. Please type anything"
+      getLine >>= putStrLn
