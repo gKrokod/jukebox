@@ -3,7 +3,7 @@ import PlayerState (FFPlay)
 import System.Win32.Types
 import System.Win32.Console
 import System.Win32.Console.CtrlHandler 
-import System.Process ( createProcess, terminateProcess, proc,waitForProcess, ProcessHandle
+import System.Process ( createProcess, terminateProcess, proc,waitForProcess, ProcessHandle,
       CreateProcess(std_err, std_in, std_out), StdStream(NoStream) ) 
 
 shutdownProcess :: FFPlay -> IO ()
