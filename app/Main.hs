@@ -29,13 +29,13 @@ main = do
     (FFPlay <$> newTVar 0
             <*> newTVar Nothing)
 
-  -- dir <- getCurrentDirectory
-#ifdef mingw32_HOST_OS
-  let dir ="R:\\_JUKEBOX" -- windows for test
-      -- file = dir <> "\\jukebox.json"
-#else
-  let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
-#endif
+  dir <- getCurrentDirectory
+-- #ifdef mingw32_HOST_OS
+--   let dir ="R:\\_JUKEBOX" -- windows for test
+--       -- file = dir <> "\\jukebox.json"
+-- #else
+--   let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
+-- #endif
 
   let
 #ifdef mingw32_HOST_OS
