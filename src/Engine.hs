@@ -39,11 +39,14 @@ saveDataBaseToFile file libT = do
 -- type OffsetStart = Double
 acquireFFplay :: String -> FilePath -> IO (ProcessHandle)
 acquireFFplay offset path = do
+    print "acqure"
+    print offset
+    print path
     (_, _, _, ph) <-
       createProcess (proc "ffplay"
         [ "-nodisp"
         , "-autoexit"
-        , "-ss", show offset
+        , "-ss", offset
         , "-loglevel", "quiet"
         , path
         ])
@@ -54,13 +57,19 @@ acquireFFplay offset path = do
     pure ph
 
 releaseFFplay :: ProcessHandle -> IO ()
-releaseFFplay = terminateProcess 
+releaseFFplay ph = do
+  print "terminate here"
+  terminateProcess ph
+  
 
-useFFplay :: TVar Pause -> FFPlay -> Track -> ProcessHandle -> IO ()
+data PlayStatus = PlayDone | PlayPause
+
+
+useFFplay :: TVar Pause -> FFPlay -> Track -> ProcessHandle -> IO (PlayStatus)
 useFFplay pause state track ph = do
   atomically $ writeTVar state.ph (Just ph)
   offsetStart <- atomically $ readTVar state.offset
-
+  print "useFFplay"
   timeStart <- Data.Time.getCurrentTime
 
   let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
@@ -68,11 +77,14 @@ useFFplay pause state track ph = do
   case timeout of
     Right (Right timePause) -> do 
       let offset' = (offsetStart + deltaOffset timeStart timePause)
-      if offset' >= fromIntegral track.duration then atomically $ writeTVar state.offset 0
+      if offset' >= fromIntegral track.duration then do atomically $ writeTVar state.offset 0 >> pure PlayDone
       else do
         atomically $ writeTVar state.offset offset'
-        playTrackSTMbracket pause state track
-    _ -> atomically $ writeTVar state.offset 0 
+        pure PlayPause
+        -- playTrackSTMbracket pause state track
+    _ -> do 
+      atomically $ writeTVar state.offset 0
+      pure PlayDone
       
 
 playTrackSTMbracket :: TVar Pause -> FFPlay -> Track -> IO ()
@@ -87,11 +99,13 @@ playTrackSTMbracket pause state track = do
     timeStart <- Data.Time.getCurrentTime
     putStrLn $ "Debug Offset: " <> show offsetStart
     putStrLn $ "Debug TimeStart: " <> show timeStart
-    bracket
-      (acquireFFplay (show offsetStart) (T.unpack track.path))
-      releaseFFplay 
-      (useFFplay pause state track)
-
+    playStatus <- bracket
+                    (acquireFFplay (show offsetStart) (T.unpack track.path))
+                    releaseFFplay 
+                    (useFFplay pause state track)
+    case playStatus of
+      PlayDone -> pure ()
+      PlayPause -> playTrackSTMbracket pause state track
 -- acquireFFplay :: OffsetStart -> FilePath -> IO (ProcessHandle)
 
 playTrackSTM :: TVar Pause -> FFPlay -> Track -> IO ()
