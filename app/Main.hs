@@ -27,14 +27,13 @@ main = do
          <*> newTVar 0
          <*> newTVar Nothing
 
+#ifdef mingw32_HOST_OS
   dir <- getCurrentDirectory
-
--- #ifdef mingw32_HOST_OS
---   let dir ="C:\\sharedFolder\\test" -- windows
---       -- file = dir <> "\\jukebox.json"
--- #else
---   let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
--- #endif
+  -- let dir ="C:\\sharedFolder\\test" -- windows
+      -- file = dir <> "\\jukebox.json"
+#else
+  let dir ="/home/m/share/sharedFolder/test" -- file = dir <> "/jukebox.json"
+#endif
 
   let
 #ifdef mingw32_HOST_OS
@@ -54,7 +53,8 @@ main = do
             Handlers.Engine.getLibrary = Engine.getLibrary tvar,
             Handlers.Engine.modifyTrack = Engine.modifyTrack tvar,
             Handlers.Engine.saveDataBaseToFile = Engine.saveDataBaseToFile file tvar,
-            Handlers.Engine.playTrack = Engine.playTrackSTM pause (FFPlay offset ph)
+            Handlers.Engine.playTrack = Engine.playTrackSTMbracket pause (FFPlay offset ph)
+            -- Handlers.Engine.playTrack = Engine.playTrackSTM pause (FFPlay offset ph)
           }
   withAsync(getKey pause) $ \_ -> do
     Handlers.Engine.ghettoBluster engine 

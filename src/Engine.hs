@@ -15,6 +15,8 @@ import Control.Concurrent.STM
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import PlayerState
+import System.Process
+import Control.Exception (bracket)
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do
@@ -33,6 +35,64 @@ saveDataBaseToFile :: FilePath -> TVar Library -> IO ()
 saveDataBaseToFile file libT = do
   lib <- atomically (readTVar libT)
   BL.writeFile file (encode lib)
+
+-- type OffsetStart = Double
+acquireFFplay :: String -> FilePath -> IO (ProcessHandle)
+acquireFFplay offset path = do
+    (_, _, _, ph) <-
+      createProcess (proc "ffplay"
+        [ "-nodisp"
+        , "-autoexit"
+        , "-ss", show offset
+        , "-loglevel", "quiet"
+        , path
+        ])
+        { std_in  = NoStream
+        , std_out = NoStream
+        , std_err = NoStream
+        }
+    pure ph
+
+releaseFFplay :: ProcessHandle -> IO ()
+releaseFFplay = terminateProcess 
+
+useFFplay :: TVar Pause -> FFPlay -> Track -> ProcessHandle -> IO ()
+useFFplay pause state track ph = do
+  atomically $ writeTVar state.ph (Just ph)
+  offsetStart <- atomically $ readTVar state.offset
+
+  timeStart <- Data.Time.getCurrentTime
+
+  let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
+  timeout <- race (threadDelay (timeLeft * 1000)) (pressPauseNext pause)
+  case timeout of
+    Right (Right timePause) -> do 
+      let offset' = (offsetStart + deltaOffset timeStart timePause)
+      if offset' >= fromIntegral track.duration then atomically $ writeTVar state.offset 0
+      else do
+        atomically $ writeTVar state.offset offset'
+        playTrackSTMbracket pause state track
+    _ -> atomically $ writeTVar state.offset 0 
+      
+
+playTrackSTMbracket :: TVar Pause -> FFPlay -> Track -> IO ()
+playTrackSTMbracket pause state track = do
+    atomically $ do
+      p <- readTVar pause
+      case p of
+        On -> retry       -- ждать, пока TVar pause изменится
+        _  -> pure ()     -- Off или Next — можно продолжать
+
+    offsetStart <- atomically $ readTVar state.offset
+    timeStart <- Data.Time.getCurrentTime
+    putStrLn $ "Debug Offset: " <> show offsetStart
+    putStrLn $ "Debug TimeStart: " <> show timeStart
+    bracket
+      (acquireFFplay (show offsetStart) (T.unpack track.path))
+      releaseFFplay 
+      (useFFplay pause state track)
+
+-- acquireFFplay :: OffsetStart -> FilePath -> IO (ProcessHandle)
 
 playTrackSTM :: TVar Pause -> FFPlay -> Track -> IO ()
 playTrackSTM pause state track = do

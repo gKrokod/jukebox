@@ -1,1 +1,4 @@
-Ghcid has stopped.
+/home/m/projects/jukebox/src/Engine.hs:5:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.Process’ is redundant
+/home/m/projects/jukebox/app/Main.hs:17:1: warning: [GHC-66111] [-Wunused-imports]
+    The import of ‘System.Directory’ is redundant
