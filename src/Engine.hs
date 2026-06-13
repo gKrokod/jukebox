@@ -1,9 +1,7 @@
 module Engine where
 import Hotkey.Types ( Pause(..) )
 import Data.Time ( UTCTime)
-import Handlers.Engine (Track(..), Library, updateTrack, formatMMSS)
-import System.Process ( createProcess, terminateProcess, proc,waitForProcess,
-      CreateProcess(std_err, std_in, std_out), StdStream(NoStream) ) 
+import Handlers.Engine (Track(..), Library)
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson (encode)
 import qualified Data.Map.Strict as Map
@@ -13,11 +11,11 @@ import Control.Concurrent.Async ( race )
 import Control.Concurrent.STM
     ( atomically, readTVar, retry, writeTVar, STM, TVar )
 import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
 import PlayerState
 import System.Process
 import Control.Exception (bracket)
 import Control.Monad
+import Handlers.LogicMemo (updateTrack)
 
 getLibrary :: TVar Library -> IO (Library)
 getLibrary libT = do

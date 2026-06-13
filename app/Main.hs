@@ -1,7 +1,6 @@
 module Main (main) where
 
-import Control.Concurrent.STM ( atomically, newTVar , readTVar)
-import System.Process (terminateProcess)
+import Control.Concurrent.STM ( atomically, newTVar )
 import Control.Concurrent.Async ( withAsync ) 
 import Hotkey.Types ( Pause(Off) )
 import qualified Handlers.Engine
@@ -61,5 +60,4 @@ main = do
     withAsync(getKey pause) $ \_ -> do
       Handlers.Engine.ghettoBluster engine 
        `onException` Engine.saveDataBaseToFile file tvar
-      putStrLn "Playlist end. Please type anything"
-      getLine >>= putStrLn
+      putStrLn "Playlist end"

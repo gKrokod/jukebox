@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
-module Handlers.Engine (Library, ghettoBluster, Track(..), Handle(..), updateTrack, formatMMSS) where
+module Handlers.Engine (Library, ghettoBluster, Track(..), Handle(..), formatMMSS) where
 import qualified Handlers.Logger
-import Data.Time ( UTCTime, addUTCTime )
+import Data.Time ( UTCTime )
 import Data.List ( sortOn )
 import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
@@ -9,12 +9,9 @@ import Data.Text as T (pack)
 import Data.Text (Text)
 import qualified Data.Map.Strict as Map
 
-
-
-
 ghettoBluster :: forall m. Monad m => Handle m -> m ()
 ghettoBluster h@Handle{..} = do
-  playList <- sortedTracks <$> getPlayList h
+  playList <- shuffle 1 . sortedTracks <$> getPlayList h
   Handlers.Logger.logMessage logger Handlers.Logger.Info ("Размер плейлиста = " <> T.pack ( show $ length playList))
   mapM_ (\x -> infoTrack x >> startPlay x) playList
   Handlers.Logger.logMessage logger Handlers.Logger.Info ("Плейлист прослушан")
@@ -65,21 +62,21 @@ data Handle m = Handle
     playTrack :: Track -> m ()
   }  
 
-updateTrack :: UTCTime -> Track -> Track
-updateTrack time track = track {
-  lastPlay = Just time,
-  planPlay = Just $ addUTCTime (fromIntegral track.interval * 86400) time,
-  count = succ track.count,
-  interval = updateInterval track.count track.interval
-                               } 
-  where updateInterval :: Word -> Word -> Word
-        -- 1 = 1
-        -- 2 = 6
-        -- n = interval * 1.7
-        updateInterval 2 _ = 6
-        updateInterval _ i  = max 1 (ceiling $ fromIntegral i * baseEaseFactor)
-          where baseEaseFactor = 1.7 :: Double
-
 getPlayList :: (Monad m) => Handle m -> m (PlayList)
 getPlayList = (mapToPlayList <$>) . getLibrary
+
+
+--fro little random in start playlist
+shuffle :: Int -> [a] -> [a]
+shuffle 0 xs = xs
+shuffle n xs = shuffle (pred n) z
+  where l = length xs
+        part = div l 3
+        (x1, x2) = splitAt part xs
+        z = myZip x1 x2
+
+myZip :: [a] -> [a] -> [a]
+myZip (x : xs) (y : ys) = x : y : myZip xs ys
+myZip [] ys = ys 
+myZip xs [] = xs 
 
