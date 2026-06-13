@@ -61,18 +61,18 @@ library
       , stm
       , async
 
- if os(windows)
-    other-modules:
-        Hotkey.Windows
-        ShutDown.Windows
-    build-depends:
-        Win32
- else
-    other-modules:
-        Hotkey.Ubuntu
-        ShutDown.Ubuntu
-    build-depends:
-        X11
+    if os(windows)
+      other-modules:
+          Hotkey.Windows
+          ShutDown.Windows
+      build-depends:
+          Win32
+    else
+      other-modules:
+          Hotkey.Ubuntu
+          ShutDown.Ubuntu
+      build-depends:
+          X11
 
 executable musicjukebox-exe
     import:
