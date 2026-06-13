@@ -3,17 +3,14 @@ name:               musicjukebox
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:            0.1.0.0
+version:            1.0.0.0
 
 author:             gKrokod
 category:           Sound
 build-type:         Simple
 
--- Extra doc files to be distributed with the package, such as a CHANGELOG or a README.
 extra-doc-files:    CHANGELOG.md
 
--- Extra source files to be distributed with the package, such as examples, or a tutorial module.
--- extra-source-files:
 
 common common-extensions
   default-language: GHC2024
@@ -92,9 +89,7 @@ executable musicjukebox-exe
       , time
       , stm
       , async
-    -- Directories containing source files.
     hs-source-dirs:   app
-
 
 benchmark musicjukebox
     -- Import common warning flags.
