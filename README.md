@@ -49,3 +49,8 @@ Just drop the executable into a music folder and run it.
 To display track names correctly in the Windows console, create a shortcut and run the program with code page 65001 (UTF-8), for example:
 
 `cmd /K "chcp 65001 & R:\_JUKEBOX\musicjukebox-windows-x64.exe"`
+
+TODO
+- conseal debug message
+- translate message
+- print timeout after pause.
