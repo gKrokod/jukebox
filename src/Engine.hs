@@ -69,7 +69,7 @@ useFFplay pause state track ph = do
     readTVar state.offset
 
   timeStart <- Data.Time.getCurrentTime
-  let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart))
+  let timeLeft = max 0 (fromIntegral track.duration - (ceiling $ offsetStart * 1000))
 
   timeout <- race (threadDelay (timeLeft * 1000)) (pressPauseNext pause)
 
